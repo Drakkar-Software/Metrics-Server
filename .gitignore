@@ -17,3 +17,5 @@ vendor/
 debug
 
 \.vscode/
+
+Gopkg\.lock
