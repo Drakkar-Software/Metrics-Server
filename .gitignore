@@ -12,7 +12,8 @@
 *.out
 
 .idea/
-vendor/
+vendor/github.com
+vendor/golang.org
 
 debug
 
