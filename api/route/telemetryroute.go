@@ -7,6 +7,6 @@ import (
 
 func Init(e *echo.Echo) {
 	e.GET("/", controller.GetAll)
-	e.GET("/metrics/new-bot-id", controller.GenerateBotID)
-	e.GET("/metrics/uptime", controller.UpdateBotUptime)
+	e.GET("/gen-bot-id", controller.GenerateBotID)
+	e.POST("/metrics/uptime", controller.UpdateBotUptime)
 }
