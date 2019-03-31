@@ -15,5 +15,5 @@ func main() {
 	e := echo.New()
 	route.Init(e)
 
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
