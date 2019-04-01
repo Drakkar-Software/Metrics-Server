@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	err := dao.Initialize()
+	err := dao.Init()
 	if err != nil {
 		panic(err)
 	}

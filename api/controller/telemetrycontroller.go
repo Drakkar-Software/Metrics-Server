@@ -11,8 +11,9 @@ import (
 	"github.com/labstack/echo"
 )
 
-func GetAll(c echo.Context) error {
-	ts, err := dao.All()
+// GetBots returns a json representation of all the bots
+func GetBots(c echo.Context) error {
+	ts, err := dao.GetBots()
 	if err != nil {
 		log.Panic(err)
 	}
@@ -20,12 +21,14 @@ func GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, ts)
 }
 
+// GenerateBotID returns a new bot ID
 func GenerateBotID(c echo.Context) error {
 	newID := model.GenerateBotID()
 
 	return c.JSON(http.StatusOK, newID)
 }
 
+// UpdateBotUptime updates a bot uptime
 func UpdateBotUptime(c echo.Context) error {
 	var bot model.Bot
 

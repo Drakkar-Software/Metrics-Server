@@ -12,11 +12,13 @@ import (
 
 var db database.DB = database.DB{}
 
-func Initialize() error {
+// Init initializes the database connection
+func Init() error {
 	return db.Initialize()
 }
 
-func All() (bot.Bots, error) {
+// GetBots returns all data about all bots
+func GetBots() (bot.Bots, error) {
 	bots := bot.Bots{}
 
 	cur, err := db.Collection.Find(context.Background(), bson.D{{}})
@@ -36,6 +38,7 @@ func All() (bot.Bots, error) {
 	return bots, err
 }
 
+// UpdateBotUptime updates bot in argument upTime (using BotID)
 func UpdateBotUptime(bot bot.Bot) error {
 	collection := db.Collection
 	filter := bson.D{{"botID", bot.BotID}}
