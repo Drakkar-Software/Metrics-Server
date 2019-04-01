@@ -10,15 +10,14 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 )
 
+var db database.DB = database.DB{}
+
+func Initialize() error {
+	return db.Initialize()
+}
+
 func All() (bot.Bots, error) {
 	bots := bot.Bots{}
-
-	db := database.DB{}
-	err := db.Initialize()
-	if err != nil {
-		return bots, err
-	}
-	defer db.Close()
 
 	cur, err := db.Collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
@@ -38,12 +37,6 @@ func All() (bot.Bots, error) {
 }
 
 func UpdateBotUptime(bot bot.Bot) error {
-	db := database.DB{}
-	err := db.Initialize()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
 	collection := db.Collection
 	filter := bson.D{{"botID", bot.BotID}}
 	update := bson.D{{"$set",
