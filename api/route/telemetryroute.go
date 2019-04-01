@@ -10,4 +10,5 @@ func Init(e *echo.Echo) {
 	e.GET("/", controller.GetBots)
 	e.GET("/gen-bot-id", controller.GenerateBotID)
 	e.POST("/metrics/uptime", controller.UpdateBotUptime)
+	e.POST("/metrics/register", controller.RegisterBot)
 }

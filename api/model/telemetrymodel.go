@@ -7,12 +7,18 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson/primitive"
 )
 
+// Session stores data about a bot session
+type Session struct {
+	StartedAt int `json:"startedAt,omitempty" bson:"startedAt"`
+	UpTime    int `json:"upTime,omitempty" bson:"upTime"`
+}
+
 // Bot stores usage info about a specific bot identified by BotID
 type Bot struct {
-	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	BotID     string             `json:"botID,omitempty" bson:"botID"`
-	CreatedAt int                `json:"createdAt,omitempty" bson:"createdAt"`
-	UpTime    int                `json:"upTime,omitempty" bson:"upTime"`
+	ID             primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	BotID          string             `json:"botID,omitempty" bson:"botID"`
+	CurrentSession Session            `json:"currentSession,omitempty" bson:"currentSession"`
+	SessionHistory []Session          `json:"sessionHistory,omitempty" bson:"sessionHistory"`
 }
 
 // GenerateBotID generates a new bot id

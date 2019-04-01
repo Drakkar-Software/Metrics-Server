@@ -10,7 +10,7 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 )
 
-var db database.DB = database.DB{}
+var db = database.DB{}
 
 // Init initializes the database connection
 func Init() error {
@@ -20,7 +20,6 @@ func Init() error {
 // GetBots returns all data about all bots
 func GetBots() (bot.Bots, error) {
 	bots := bot.Bots{}
-
 	cur, err := db.Collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		return bots, err
@@ -34,7 +33,6 @@ func GetBots() (bot.Bots, error) {
 		}
 		bots = append(bots, decodedBot)
 	}
-
 	return bots, err
 }
 
@@ -44,7 +42,7 @@ func UpdateBotUptime(bot bot.Bot) error {
 	filter := bson.D{{"botID", bot.BotID}}
 	update := bson.D{{"$set",
 		bson.D{{
-			"upTime", bot.UpTime,
+			"currentSession.upTime", bot.CurrentSession.UpTime,
 		}},
 	}}
 	updateResult, err := collection.UpdateOne(context.Background(), filter, update)
@@ -55,5 +53,10 @@ func UpdateBotUptime(bot bot.Bot) error {
 		log.Println("None or more than one bot updated with BotID: ", bot.BotID, ": ", updateResult.MatchedCount)
 	}
 	return err
+}
 
+// RegisterOrUpdate updates a bot if already in database or registers a new bot
+func RegisterOrUpdate(bot bot.Bot) error {
+	// TODO
+	return nil
 }
