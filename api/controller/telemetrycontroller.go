@@ -28,7 +28,7 @@ func GenerateBotID(c echo.Context) error {
 
 // UpdateBotUptime updates a bot uptime
 func UpdateBotUptime(c echo.Context) error {
-	var bot model.Bot
+	bot := new(model.Bot)
 	c.Bind(bot)
 	err := dao.UpdateBotUptime(bot)
 	if err != nil {
@@ -40,7 +40,7 @@ func UpdateBotUptime(c echo.Context) error {
 
 // RegisterBot registers a bot as started (creates a new bot if necessary)
 func RegisterBot(c echo.Context) error {
-	var bot model.Bot
+	bot := new(model.Bot)
 	c.Bind(bot)
 	err := dao.RegisterOrUpdate(bot)
 	if err != nil {
