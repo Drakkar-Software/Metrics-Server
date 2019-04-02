@@ -9,8 +9,12 @@ import (
 
 // Session stores data about a bot session
 type Session struct {
-	StartedAt int `json:"startedat,omitempty" bson:"startedAt"`
-	UpTime    int `json:"uptime,omitempty" bson:"upTime"`
+	StartedAt  int      `json:"startedat,omitempty" bson:"startedAt"`
+	UpTime     int      `json:"uptime,omitempty" bson:"upTime"`
+	Simulator  bool     `json:"simulator,omitempty" bson:"simulator"`
+	Trader     bool     `json:"trader,omitempty" bson:"trader"`
+	EvalConfig []string `json:"evalconfig,omitempty" bson:"evalConfig"`
+	Exchanges  []string `json:"exchanges,omitempty" bson:"exchanges"`
 }
 
 // Bot stores usage info about a specific bot identified by BotID
