@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/Drakkar-Software/Metrics-Server/api/dao"
-	"github.com/Drakkar-Software/Metrics-Server/api/route"
+	"github.com/Drakkar-Software/Metrics-Server/routes"
 	"github.com/labstack/echo"
 )
 
@@ -14,7 +14,7 @@ func main() {
 		panic(err)
 	}
 	e := echo.New()
-	route.Init(e)
+	routes.Init(e)
 
 	e.Logger.Fatal(e.Start(":" + getPort()))
 }

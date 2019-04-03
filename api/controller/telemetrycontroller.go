@@ -16,6 +16,7 @@ func GetBots(c echo.Context) error {
 	bots, err := dao.GetBots()
 	if err != nil {
 		log.Panic(err)
+		return c.JSON(http.StatusBadRequest, bots)
 	}
 
 	return c.JSON(http.StatusOK, bots)
@@ -23,28 +24,35 @@ func GetBots(c echo.Context) error {
 
 // GenerateBotID returns a new bot ID
 func GenerateBotID(c echo.Context) error {
-	return c.JSON(http.StatusOK, model.GenerateBotID())
+	id, err := dao.GenerateBotID()
+	if err != nil {
+		log.Println(err)
+		return c.JSON(http.StatusBadRequest, id)
+	}
+	return c.JSON(http.StatusOK, id)
 }
 
 // UpdateBotUptime updates a bot uptime
 func UpdateBotUptime(c echo.Context) error {
 	bot := new(model.Bot)
 	c.Bind(bot)
-	err := dao.UpdateBotUptime(bot)
+	id, err := dao.UpdateBotUptime(bot)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err, bot.ID)
+		return c.JSON(http.StatusBadRequest, id)
 	}
 
-	return c.JSON(http.StatusOK, bot.BotID)
+	return c.JSON(http.StatusOK, id)
 }
 
 // RegisterBot registers a bot as started (creates a new bot if necessary)
 func RegisterBot(c echo.Context) error {
 	bot := new(model.Bot)
 	c.Bind(bot)
-	err := dao.RegisterOrUpdate(bot)
+	id, err := dao.RegisterOrUpdate(bot)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err, bot.ID)
+		return c.JSON(http.StatusBadRequest, id)
 	}
-	return c.JSON(http.StatusOK, bot.BotID)
+	return c.JSON(http.StatusOK, id)
 }

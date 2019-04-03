@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	bot "github.com/Drakkar-Software/Metrics-Server/api/model"
@@ -37,56 +38,52 @@ func GetBots() (bot.Bots, error) {
 }
 
 // UpdateBotUptime updates bot in argument upTime (using BotID)
-func UpdateBotUptime(uploadedBot *bot.Bot) error {
+func UpdateBotUptime(uploadedBot *bot.Bot) (interface{}, error) {
 	collection := db.Collection
-	filter := bson.D{{"botID", uploadedBot.BotID}}
+	filter := bson.D{{"_id", uploadedBot.ID}}
 	update := bson.D{{"$set",
 		bson.D{{
 			"currentSession.upTime", uploadedBot.CurrentSession.UpTime,
 		}},
 	}}
-	_, err := collection.UpdateOne(context.Background(), filter, update)
+	updateResult, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return err
+	if updateResult.MatchedCount != 1 {
+		return nil, errors.New("No matching document with given id")
+	}
+	return updateResult.UpsertedID, err
 }
 
 // RegisterOrUpdate updates a bot if already in database or registers a new bot called after few minutes a bot is running
-func RegisterOrUpdate(uploadedBot *bot.Bot) error {
+func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
 	collection := db.Collection
 	// check if bot exists
 	var foundBot bot.Bot
-	filter := bson.D{{"botID", uploadedBot.BotID}}
-	count, err := collection.Count(context.Background(), filter)
+	filter := bson.D{{"_id", uploadedBot.ID}}
+	err := collection.FindOne(context.Background(), filter).Decode(&foundBot)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if count > 0 {
-		// update existing bot
-		err := collection.FindOne(context.Background(), filter).Decode(&foundBot)
-		if err != nil {
-			return err
-		}
-		return registerNewBotSession(uploadedBot, &foundBot)
-	} else {
-		// create new bot
-		return createNewBot(uploadedBot)
-	}
+	return registerNewBotSession(uploadedBot, &foundBot)
 }
 
-func createNewBot(uploadedBot *bot.Bot) error {
-	_, err := db.Collection.InsertOne(context.Background(), uploadedBot)
+// GenerateBotID generates a new bot id
+func GenerateBotID() (interface{}, error) {
+	newID, err := db.Collection.InsertOne(context.Background(), bot.Bot{})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Println("Added bot with id:", uploadedBot.BotID)
-	return nil
+	log.Println("Registered bot with id:", newID.InsertedID)
+	return newID.InsertedID, nil
 }
 
-func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) error {
+func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}, error) {
 	// add current session to session history (start new session)
-	foundBot.SessionHistory = append(foundBot.SessionHistory, foundBot.CurrentSession)
+	if foundBot.CurrentSession.UpTime > 0 {
+		foundBot.SessionHistory = append(foundBot.SessionHistory, foundBot.CurrentSession)
+	}
 	foundBot.CurrentSession = uploadedBot.CurrentSession
 	update := bson.D{{"$set",
 		bson.D{
@@ -98,11 +95,14 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) error {
 			},
 		},
 	}}
-	filter := bson.D{{"botID", uploadedBot.BotID}}
-	_, err := db.Collection.UpdateOne(context.Background(), filter, update)
+	filter := bson.D{{"_id", uploadedBot.ID}}
+	updateResult, err := db.Collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Println("Registed new session for bot with id:", uploadedBot.BotID)
-	return nil
+	if updateResult.MatchedCount != 1 {
+		return nil, errors.New("No matching document with given id")
+	}
+	log.Println("Registed new session for bot with id:", uploadedBot.ID)
+	return updateResult.UpsertedID, err
 }
