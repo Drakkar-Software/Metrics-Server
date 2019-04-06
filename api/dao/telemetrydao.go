@@ -81,20 +81,19 @@ func GenerateBotID() (interface{}, error) {
 
 func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}, error) {
 	// add current session to session history (start new session)
-	if foundBot.CurrentSession.UpTime > 0 {
-		foundBot.SessionHistory = append(foundBot.SessionHistory, foundBot.CurrentSession)
-	}
+	// if foundBot.CurrentSession.UpTime > 0 {
+	// 	foundBot.SessionHistory = append(foundBot.SessionHistory, foundBot.CurrentSession)
+	// }
+	newHistoricalSession := foundBot.CurrentSession
 	foundBot.CurrentSession = uploadedBot.CurrentSession
-	update := bson.D{{"$set",
-		bson.D{
-			{
-				"currentSession", foundBot.CurrentSession,
-			},
-			{
-				"sessionHistory", foundBot.SessionHistory,
-			},
-		},
-	}}
+	update := bson.M{
+		"$set": bson.D{{
+			"currentSession", foundBot.CurrentSession,
+		}},
+		"$push": bson.D{{
+			"sessionHistory", newHistoricalSession,
+		}},
+	}
 	filter := bson.D{{"_id", uploadedBot.ID}}
 	updateResult, err := db.Collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
