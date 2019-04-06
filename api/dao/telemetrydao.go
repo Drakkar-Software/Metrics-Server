@@ -54,7 +54,7 @@ func UpdateBotUptime(uploadedBot *bot.Bot) (interface{}, error) {
 	if updateResult.MatchedCount != 1 {
 		return nil, ErrBotNotFound
 	}
-	return updateResult.UpsertedID, err
+	return uploadedBot.ID, err
 }
 
 // RegisterOrUpdate updates a bot if already in database or registers a new bot called after few minutes a bot is running
@@ -122,5 +122,5 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 		return nil, ErrBotNotFound
 	}
 	log.Println("Registed new session for bot with id:", uploadedBot.ID)
-	return updateResult.UpsertedID, err
+	return uploadedBot.ID, err
 }
