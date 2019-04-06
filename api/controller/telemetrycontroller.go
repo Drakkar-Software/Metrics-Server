@@ -38,8 +38,12 @@ func UpdateBotUptime(c echo.Context) error {
 	c.Bind(bot)
 	id, err := dao.UpdateBotUptime(bot)
 	if err != nil {
-		log.Println(err, bot.ID)
-		return c.JSON(http.StatusBadRequest, id)
+		if err == dao.ErrBotNotFound {
+			return c.JSON(http.StatusNotFound, id)
+		} else {
+			log.Println(err, bot.ID)
+			return c.JSON(http.StatusBadRequest, id)
+		}
 	}
 
 	return c.JSON(http.StatusOK, id)
@@ -51,8 +55,12 @@ func RegisterBot(c echo.Context) error {
 	c.Bind(bot)
 	id, err := dao.RegisterOrUpdate(bot)
 	if err != nil {
-		log.Println(err, bot.ID)
-		return c.JSON(http.StatusBadRequest, id)
+		if err == dao.ErrBotNotFound {
+			return c.JSON(http.StatusNotFound, id)
+		} else {
+			log.Println(err, bot.ID)
+			return c.JSON(http.StatusBadRequest, id)
+		}
 	}
 	return c.JSON(http.StatusOK, id)
 }

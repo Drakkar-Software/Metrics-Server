@@ -12,6 +12,7 @@ import (
 )
 
 var db = database.DB{}
+var ErrBotNotFound = errors.New("bot not found")
 
 // Init initializes the database connection
 func Init() error {
@@ -51,7 +52,7 @@ func UpdateBotUptime(uploadedBot *bot.Bot) (interface{}, error) {
 		return nil, err
 	}
 	if updateResult.MatchedCount != 1 {
-		return nil, errors.New("No matching document with given id")
+		return nil, ErrBotNotFound
 	}
 	return updateResult.UpsertedID, err
 }
@@ -62,7 +63,14 @@ func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
 	// check if bot exists
 	var foundBot bot.Bot
 	filter := bson.D{{"_id", uploadedBot.ID}}
-	err := collection.FindOne(context.Background(), filter).Decode(&foundBot)
+	count, err := collection.Count(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	if count < 1 {
+		return nil, ErrBotNotFound
+	}
+	err = collection.FindOne(context.Background(), filter).Decode(&foundBot)
 	if err != nil {
 		return nil, err
 	}
@@ -80,10 +88,6 @@ func GenerateBotID() (interface{}, error) {
 }
 
 func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}, error) {
-	// add current session to session history (start new session)
-	// if foundBot.CurrentSession.UpTime > 0 {
-	// 	foundBot.SessionHistory = append(foundBot.SessionHistory, foundBot.CurrentSession)
-	// }
 	newHistoricalSession := foundBot.CurrentSession
 	foundBot.CurrentSession = uploadedBot.CurrentSession
 	update := bson.M{
@@ -94,13 +98,28 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 			"sessionHistory", newHistoricalSession,
 		}},
 	}
+	if len(foundBot.SessionHistory) == 0 {
+		if newHistoricalSession.UpTime > 0 {
+			foundBot.SessionHistory = append(foundBot.SessionHistory, newHistoricalSession)
+		}
+		update = bson.M{
+			"$set": bson.D{
+				{
+					"currentSession", foundBot.CurrentSession,
+				},
+				{
+					"sessionHistory", foundBot.SessionHistory,
+				},
+			},
+		}
+	}
 	filter := bson.D{{"_id", uploadedBot.ID}}
 	updateResult, err := db.Collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return nil, err
 	}
 	if updateResult.MatchedCount != 1 {
-		return nil, errors.New("No matching document with given id")
+		return nil, ErrBotNotFound
 	}
 	log.Println("Registed new session for bot with id:", uploadedBot.ID)
 	return updateResult.UpsertedID, err
