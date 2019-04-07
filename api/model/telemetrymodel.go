@@ -11,6 +11,7 @@ type Session struct {
 	Simulator     bool     `json:"simulator,omitempty" bson:"simulator"`
 	Trader        bool     `json:"trader,omitempty" bson:"trader"`
 	EvalConfig    []string `json:"evalconfig,omitempty" bson:"evalConfig"`
+	Pairs         []string `json:"pairs,omitempty" bson:"pairs"`
 	Exchanges     []string `json:"exchanges,omitempty" bson:"exchanges"`
 	Notifications []string `json:"notifications,omitempty" bson:"notifications"`
 }
