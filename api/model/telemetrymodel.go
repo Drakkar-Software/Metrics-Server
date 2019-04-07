@@ -28,6 +28,7 @@ type Bots []Bot
 
 // FilterPublicInfo Resets non public info
 func (bot *Bot) FilterPublicInfo() {
+	bot.ID = primitive.NilObjectID
 	bot.CurrentSession.FilterPublicInfo()
 	for _, session := range bot.SessionHistory {
 		session.FilterPublicInfo()
