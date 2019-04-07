@@ -36,6 +36,7 @@ func (bot *Bot) FilterPublicInfo() {
 
 // FilterPublicInfo Resets non public info
 func (session *Session) FilterPublicInfo() {
+	session.StartedAt = 0
 	session.UpTime = 0
 	session.Simulator = false
 	session.Trader = false
