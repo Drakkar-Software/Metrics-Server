@@ -39,4 +39,5 @@ func (session *Session) FilterPublicInfo() {
 	session.UpTime = 0
 	session.Simulator = false
 	session.Trader = false
+	session.Notifications = nil
 }
