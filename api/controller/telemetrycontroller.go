@@ -12,8 +12,8 @@ import (
 )
 
 // GetBots returns a json representation of all the bots
-func GetBots(c echo.Context) error {
-	bots, err := dao.GetBots()
+func PublicGetBots(c echo.Context) error {
+	bots, err := dao.PublicGetBots()
 	if err != nil {
 		log.Panic(err)
 		return c.JSON(http.StatusBadRequest, bots)

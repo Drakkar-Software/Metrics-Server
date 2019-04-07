@@ -25,3 +25,18 @@ type Bot struct {
 
 // Bots is a slice of Bot
 type Bots []Bot
+
+// FilterPublicInfo Resets non public info
+func (bot *Bot) FilterPublicInfo() {
+	bot.CurrentSession.FilterPublicInfo()
+	for _, session := range bot.SessionHistory {
+		session.FilterPublicInfo()
+	}
+}
+
+// FilterPublicInfo Resets non public info
+func (session *Session) FilterPublicInfo() {
+	session.UpTime = 0
+	session.Simulator = false
+	session.Trader = false
+}

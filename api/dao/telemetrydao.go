@@ -20,7 +20,7 @@ func Init() error {
 }
 
 // GetBots returns all data about all bots
-func GetBots() (bot.Bots, error) {
+func PublicGetBots() (bot.Bots, error) {
 	bots := bot.Bots{}
 	cur, err := db.Collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
@@ -33,6 +33,7 @@ func GetBots() (bot.Bots, error) {
 		if err != nil {
 			panic(err)
 		}
+		decodedBot.FilterPublicInfo()
 		bots = append(bots, decodedBot)
 	}
 	return bots, err
