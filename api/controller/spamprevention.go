@@ -45,7 +45,6 @@ var requestStatsByIP = make(map[string]*requestStats)
 // IsIPAllowed returns false if API is getting spammed
 func IsIPAllowed(c echo.Context) bool {
 	ip := c.RealIP()
-	log.Println(ip)
 	stats, exists := requestStatsByIP[ip]
 	if exists {
 		// not first request
