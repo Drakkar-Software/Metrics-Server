@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"log"
-
 	"github.com/Drakkar-Software/Metrics-Server/api/dao"
 	"github.com/Drakkar-Software/Metrics-Server/api/model"
+	"log"
+	"strconv"
+	"time"
 
 	"net/http"
 
@@ -20,6 +21,44 @@ func PublicGetBots(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, bots)
+}
+
+// PublicGetCount returns the number of total / yearly / monthly / daily active bots
+func PublicGetCount(c echo.Context) error {
+	yearsParam := c.Param("years")
+	monthsParam := c.Param("months")
+	daysParam := c.Param("days")
+
+	years, err := strconv.Atoi(yearsParam)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	months, err := strconv.Atoi(monthsParam)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	days, err := strconv.Atoi(daysParam)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// returns full total if params are all zeros
+	if years == 0 && months == 0 && days == 0 {
+		totalBots, err := dao.PublicGetCountBots(0)
+		if err != nil {
+			log.Panic(err)
+		}
+		return c.JSON(http.StatusOK, totalBots)
+	} else {
+		lastMonthTimeStamp := time.Now().AddDate(years, months, days)
+		totalBots, err := dao.PublicGetCountBots(lastMonthTimeStamp.Unix())
+		if err != nil {
+			log.Panic(err)
+		}
+		return c.JSON(http.StatusOK, totalBots)
+	}
 }
 
 // GenerateBotID returns a new bot ID
@@ -39,7 +78,7 @@ func GenerateBotID(c echo.Context) error {
 func UpdateBotUptime(c echo.Context) error {
 	if IsIPAllowed(c) {
 		bot := new(model.Bot)
-		c.Bind(bot)
+		_ = c.Bind(bot)
 		id, err := dao.UpdateBotUptime(bot)
 		if err != nil {
 			if err == dao.ErrBotNotFound {
@@ -57,7 +96,7 @@ func UpdateBotUptime(c echo.Context) error {
 func RegisterBot(c echo.Context) error {
 	if IsIPAllowed(c) {
 		bot := new(model.Bot)
-		c.Bind(bot)
+		_ = c.Bind(bot)
 		id, err := dao.RegisterOrUpdate(bot)
 		if err != nil {
 			if err == dao.ErrBotNotFound {

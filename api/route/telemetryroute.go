@@ -9,6 +9,7 @@ import (
 func Init(e *echo.Echo) {
 	e.GET("/gen-bot-id", controller.GenerateBotID)
 	e.GET("/metrics/community", controller.PublicGetBots)
+	e.GET("/metrics/community/count/:years/:months/:days", controller.PublicGetCount)
 	e.POST("/metrics/uptime", controller.UpdateBotUptime)
 	e.POST("/metrics/register", controller.RegisterBot)
 }
