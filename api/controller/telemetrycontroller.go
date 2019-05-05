@@ -25,6 +25,7 @@ func PublicGetBots(c echo.Context) error {
 
 // PublicGetCount returns the number of total / yearly / monthly / daily active bots
 func PublicGetCount(c echo.Context) error {
+	json_map := make(map[string]interface{})
 	yearsParam := c.Param("years")
 	monthsParam := c.Param("months")
 	daysParam := c.Param("days")
@@ -50,14 +51,16 @@ func PublicGetCount(c echo.Context) error {
 		if err != nil {
 			log.Panic(err)
 		}
-		return c.JSON(http.StatusOK, totalBots)
+		json_map["total"] = totalBots
+		return c.JSON(http.StatusOK, json_map)
 	} else {
 		lastMonthTimeStamp := time.Now().AddDate(years, months, days)
 		totalBots, err := dao.PublicGetCountBots(lastMonthTimeStamp.Unix())
 		if err != nil {
 			log.Panic(err)
 		}
-		return c.JSON(http.StatusOK, totalBots)
+		json_map["total"] = totalBots
+		return c.JSON(http.StatusOK, json_map)
 	}
 }
 
