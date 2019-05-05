@@ -3,10 +3,9 @@ package dao
 import (
 	"context"
 	"errors"
-	"log"
-
 	bot "github.com/Drakkar-Software/Metrics-Server/api/model"
-	database "github.com/Drakkar-Software/Metrics-Server/database"
+	"github.com/Drakkar-Software/Metrics-Server/database"
+	"log"
 
 	"github.com/mongodb/mongo-go-driver/bson"
 )
@@ -37,6 +36,26 @@ func PublicGetBots() (bot.Bots, error) {
 		bots = append(bots, decodedBot)
 	}
 	return bots, err
+}
+
+// PublicGetCountBots returns the number of active bot until time
+func PublicGetCountBots(untilTime int64) (int64, error) {
+	filter := bson.M{"$expr":
+		bson.M{"$gt":
+			bson.A{
+				bson.M{"$add":
+					bson.A{
+						"$currentSession.startedAt",
+						"$currentSession.upTime"}},
+				untilTime}}}
+
+	count, err := db.Collection.Count(context.Background(), filter)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, err
 }
 
 // UpdateBotUptime updates bot in argument upTime (using BotID)
