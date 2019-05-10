@@ -1,11 +1,12 @@
 package controller
 
 import (
-	"github.com/Drakkar-Software/Metrics-Server/api/dao"
-	"github.com/Drakkar-Software/Metrics-Server/api/model"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/Drakkar-Software/Metrics-Server/api/dao"
+	"github.com/Drakkar-Software/Metrics-Server/api/model"
 
 	"net/http"
 
@@ -25,7 +26,7 @@ func PublicGetBots(c echo.Context) error {
 
 // PublicGetCount returns the number of total / yearly / monthly / daily active bots
 func PublicGetCount(c echo.Context) error {
-	json_map := make(map[string]interface{})
+	jsonMap := make(map[string]interface{})
 	yearsParam := c.Param("years")
 	monthsParam := c.Param("months")
 	daysParam := c.Param("days")
@@ -51,17 +52,16 @@ func PublicGetCount(c echo.Context) error {
 		if err != nil {
 			log.Panic(err)
 		}
-		json_map["total"] = totalBots
-		return c.JSON(http.StatusOK, json_map)
+		jsonMap["total"] = totalBots
 	} else {
 		lastMonthTimeStamp := time.Now().AddDate(years, months, days)
 		totalBots, err := dao.PublicGetCountBots(lastMonthTimeStamp.Unix())
 		if err != nil {
 			log.Panic(err)
 		}
-		json_map["total"] = totalBots
-		return c.JSON(http.StatusOK, json_map)
+		jsonMap["total"] = totalBots
 	}
+	return c.JSON(http.StatusOK, jsonMap)
 }
 
 // GenerateBotID returns a new bot ID
@@ -104,6 +104,8 @@ func RegisterBot(c echo.Context) error {
 		if err != nil {
 			if err == dao.ErrBotNotFound {
 				return c.JSON(http.StatusNotFound, id)
+			} else if err == dao.ErrInvalidData {
+				return c.JSON(http.StatusBadRequest, id)
 			}
 			log.Println(err, bot.ID)
 			return c.JSON(http.StatusBadRequest, id)

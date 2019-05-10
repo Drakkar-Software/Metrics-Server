@@ -3,22 +3,28 @@ package dao
 import (
 	"context"
 	"errors"
+	"log"
+
 	bot "github.com/Drakkar-Software/Metrics-Server/api/model"
 	"github.com/Drakkar-Software/Metrics-Server/database"
-	"log"
 
 	"github.com/mongodb/mongo-go-driver/bson"
 )
 
 var db = database.DB{}
+
+// ErrBotNotFound is returned new a bot is not found in database
 var ErrBotNotFound = errors.New("bot not found")
+
+// ErrInvalidData is returned new a bot is invalid (ex: CurrentSession.StartedAt == 0)
+var ErrInvalidData = errors.New("invalid data")
 
 // Init initializes the database connection
 func Init() error {
 	return db.Initialize()
 }
 
-// GetBots returns all data about all bots
+// PublicGetBots returns all data about all bots
 func PublicGetBots() (bot.Bots, error) {
 	bots := bot.Bots{}
 	cur, err := db.Collection.Find(context.Background(), bson.D{{}})
@@ -40,14 +46,11 @@ func PublicGetBots() (bot.Bots, error) {
 
 // PublicGetCountBots returns the number of active bot until time
 func PublicGetCountBots(untilTime int64) (int64, error) {
-	filter := bson.M{"$expr":
-		bson.M{"$gt":
-			bson.A{
-				bson.M{"$add":
-					bson.A{
-						"$currentSession.startedAt",
-						"$currentSession.upTime"}},
-				untilTime}}}
+	filter := bson.M{"$expr": bson.M{"$gt": bson.A{
+		bson.M{"$add": bson.A{
+			"$currentSession.startedAt",
+			"$currentSession.upTime"}},
+		untilTime}}}
 
 	count, err := db.Collection.Count(context.Background(), filter)
 
@@ -79,6 +82,9 @@ func UpdateBotUptime(uploadedBot *bot.Bot) (interface{}, error) {
 
 // RegisterOrUpdate updates a bot if already in database or registers a new bot called after few minutes a bot is running
 func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
+	if uploadedBot.CurrentSession.StartedAt == 0 || uploadedBot.CurrentSession.UpTime == 0 {
+		return nil, ErrInvalidData
+	}
 	collection := db.Collection
 	// check if bot exists
 	var foundBot bot.Bot
