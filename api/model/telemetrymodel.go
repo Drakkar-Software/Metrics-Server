@@ -44,4 +44,6 @@ func (session *Session) FilterPublicInfo() {
 	session.Simulator = false
 	session.Trader = false
 	session.Notifications = nil
+	session.Type = ""
+	session.Platform = ""
 }
