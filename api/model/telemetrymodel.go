@@ -15,6 +15,7 @@ type Session struct {
 	Exchanges     []string `json:"exchanges,omitempty" bson:"exchanges"`
 	Notifications []string `json:"notifications,omitempty" bson:"notifications"`
 	Type          string   `json:"type,omitempty" bson:"type"`
+	Platform      string   `json:"platform,omitempty" bson:"platform"`
 }
 
 // Bot stores usage info about a specific bot identified by BotID
