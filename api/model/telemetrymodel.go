@@ -6,16 +6,19 @@ import (
 
 // Session stores data about a bot session
 type Session struct {
-	StartedAt     int      `json:"startedat,omitempty" bson:"startedAt"`
-	UpTime        int      `json:"uptime,omitempty" bson:"upTime"`
-	Simulator     bool     `json:"simulator,omitempty" bson:"simulator"`
-	Trader        bool     `json:"trader,omitempty" bson:"trader"`
-	EvalConfig    []string `json:"evalconfig,omitempty" bson:"evalConfig"`
-	Pairs         []string `json:"pairs,omitempty" bson:"pairs"`
-	Exchanges     []string `json:"exchanges,omitempty" bson:"exchanges"`
-	Notifications []string `json:"notifications,omitempty" bson:"notifications"`
-	Type          string   `json:"type,omitempty" bson:"type"`
-	Platform      string   `json:"platform,omitempty" bson:"platform"`
+	StartedAt      int      `json:"startedat,omitempty" bson:"startedAt"`
+	UpTime         int      `json:"uptime,omitempty" bson:"upTime"`
+	Simulator      bool     `json:"simulator,omitempty" bson:"simulator"`
+	Trader         bool     `json:"trader,omitempty" bson:"trader"`
+	EvalConfig     []string `json:"evalconfig,omitempty" bson:"evalConfig"`
+	Pairs          []string `json:"pairs,omitempty" bson:"pairs"`
+	Exchanges      []string `json:"exchanges,omitempty" bson:"exchanges"`
+	Notifications  []string `json:"notifications,omitempty" bson:"notifications"`
+	Type           string   `json:"type,omitempty" bson:"type"`
+	Platform       string   `json:"platform,omitempty" bson:"platform"`
+	ReferenceMaket string   `json:"referencemarket,omitempty" bson:"referenceMarket"`
+	PortfolioValue float32  `json:"portfoliovalue,omitempty" bson:"portfolioValue"`
+	Profitability  float32  `json:"profitability,omitempty" bson:"profitability"`
 }
 
 // Bot stores usage info about a specific bot identified by BotID
@@ -46,4 +49,7 @@ func (session *Session) FilterPublicInfo() {
 	session.Notifications = nil
 	session.Type = ""
 	session.Platform = ""
+	session.PortfolioValue = 0
+	session.Profitability = 0
+	session.ReferenceMaket = ""
 }

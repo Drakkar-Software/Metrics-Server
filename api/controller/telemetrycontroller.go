@@ -77,12 +77,12 @@ func GenerateBotID(c echo.Context) error {
 	return c.JSON(http.StatusTooManyRequests, nil)
 }
 
-// UpdateBotUptime updates a bot uptime
-func UpdateBotUptime(c echo.Context) error {
+// UpdateBotUptimeAndProfitability updates a bot uptime
+func UpdateBotUptimeAndProfitability(c echo.Context) error {
 	if IsIPAllowed(c) {
 		bot := new(model.Bot)
 		_ = c.Bind(bot)
-		id, err := dao.UpdateBotUptime(bot)
+		id, err := dao.UpdateBotUptimeAndProfitability(bot)
 		if err != nil {
 			if err == dao.ErrBotNotFound {
 				return c.JSON(http.StatusNotFound, id)

@@ -61,15 +61,15 @@ func PublicGetCountBots(untilTime int64) (int64, error) {
 	return count, err
 }
 
-// UpdateBotUptime updates bot in argument upTime (using BotID)
-func UpdateBotUptime(uploadedBot *bot.Bot) (interface{}, error) {
+// UpdateBotUptimeAndProfitability updates bot in argument upTime and profitability (using BotID)
+func UpdateBotUptimeAndProfitability(uploadedBot *bot.Bot) (interface{}, error) {
 	collection := db.Collection
-	filter := bson.D{{"_id", uploadedBot.ID}}
-	update := bson.D{{"$set",
-		bson.D{{
-			"currentSession.upTime", uploadedBot.CurrentSession.UpTime,
-		}},
-	}}
+	filter := bson.M{"_id": uploadedBot.ID}
+	update := bson.M{"$set": bson.M{
+		"currentSession.upTime":        uploadedBot.CurrentSession.UpTime,
+		"currentSession.profitability": uploadedBot.CurrentSession.Profitability,
+	},
+	}
 	updateResult, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return nil, err
