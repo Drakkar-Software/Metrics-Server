@@ -1,11 +1,13 @@
 package main
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/Drakkar-Software/Metrics-Server/database"
 	"github.com/Drakkar-Software/Metrics-Server/routes"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func main() {
@@ -15,6 +17,9 @@ func main() {
 	}
 	e := echo.New()
 	routes.Init(e)
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowMethods: []string{http.MethodGet, http.MethodPost},
+	}))
 
 	e.Logger.Fatal(e.Start(":" + getPort()))
 }
