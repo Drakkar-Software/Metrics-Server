@@ -3,13 +3,13 @@ package main
 import (
 	"os"
 
-	"github.com/Drakkar-Software/Metrics-Server/api/dao"
+	"github.com/Drakkar-Software/Metrics-Server/database"
 	"github.com/Drakkar-Software/Metrics-Server/routes"
 	"github.com/labstack/echo"
 )
 
 func main() {
-	err := dao.Init()
+	err := database.Init()
 	if err != nil {
 		panic(err)
 	}

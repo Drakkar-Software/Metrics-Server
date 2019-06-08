@@ -24,6 +24,23 @@ func PublicGetBots(c echo.Context) error {
 	return c.JSON(http.StatusOK, bots)
 }
 
+// AuthenticatedGetBots returns a json representation of all the bots without filters
+func AuthenticatedGetBots(c echo.Context) error {
+	if IsIPAllowed(c) {
+		if dao.IsAuthorizedUser(c.Request().Header.Get("Api-Key"), model.FullAccess) {
+			bots, err := dao.CompleteGetBots()
+			if err != nil {
+				log.Panic(err)
+				return c.JSON(http.StatusBadRequest, bots)
+			}
+
+			return c.JSON(http.StatusOK, bots)
+		}
+		return c.JSON(http.StatusUnauthorized, nil)
+	}
+	return c.JSON(http.StatusTooManyRequests, nil)
+}
+
 // PublicGetCount returns the number of total / yearly / monthly / daily active bots
 func PublicGetCount(c echo.Context) error {
 	jsonMap := make(map[string]interface{})

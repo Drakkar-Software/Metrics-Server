@@ -9,14 +9,25 @@ import (
 	"github.com/mongodb/mongo-go-driver/mongo/readpref"
 )
 
+var dBName = "heroku_mq79r21v"
+
 // DB database structure
 type DB struct {
-	Client     *mongo.Client
-	Collection *mongo.Collection
+	Client         *mongo.Client
+	Collection     *mongo.Collection
+	UserCollection *mongo.Collection
 }
 
-// Initialize connects to database and checks connection
-func (db *DB) Initialize() error {
+// Database is the database connexion instance
+var Database = DB{}
+
+// Init initializes the database connection
+func Init() error {
+	return Database.initialize()
+}
+
+// initialize connects to database and checks connection
+func (db *DB) initialize() error {
 	client, err := mongo.Connect(context.Background(), DBURI())
 	if err != nil {
 		return err
@@ -28,6 +39,7 @@ func (db *DB) Initialize() error {
 	fmt.Println("Connected to database")
 	db.Client = client
 	db.Collection = db.GetCollection()
+	db.UserCollection = db.GetUserCollection()
 	return err
 }
 
@@ -46,7 +58,7 @@ func DBURI() string {
 	dburl := os.Getenv("MONGODB_URI")
 
 	if dburl == "" {
-		dburl = "localhost"
+		panic("Database url not found in environment variables. Please set MONGODB_URI env variable.")
 	}
 
 	return dburl
@@ -54,5 +66,10 @@ func DBURI() string {
 
 // GetCollection returns the metrics collection
 func (db *DB) GetCollection() *mongo.Collection {
-	return db.Client.Database("heroku_mq79r21v").Collection("metrics")
+	return db.Client.Database(dBName).Collection("metrics")
+}
+
+// GetUserCollection returns the metrics collection
+func (db *DB) GetUserCollection() *mongo.Collection {
+	return db.Client.Database(dBName).Collection("users")
 }

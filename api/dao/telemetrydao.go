@@ -11,37 +11,20 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 )
 
-var db = database.DB{}
-
 // ErrBotNotFound is returned new a bot is not found in database
 var ErrBotNotFound = errors.New("bot not found")
 
 // ErrInvalidData is returned new a bot is invalid (ex: CurrentSession.StartedAt == 0)
 var ErrInvalidData = errors.New("invalid data")
 
-// Init initializes the database connection
-func Init() error {
-	return db.Initialize()
+// PublicGetBots returns filtered data about all bots
+func PublicGetBots() (bot.Bots, error) {
+	return fetchBots(true)
 }
 
-// PublicGetBots returns all data about all bots
-func PublicGetBots() (bot.Bots, error) {
-	bots := bot.Bots{}
-	cur, err := db.Collection.Find(context.Background(), bson.D{{}})
-	if err != nil {
-		return bots, err
-	}
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var decodedBot bot.Bot
-		err := cur.Decode(&decodedBot)
-		if err != nil {
-			panic(err)
-		}
-		decodedBot.FilterPublicInfo()
-		bots = append(bots, decodedBot)
-	}
-	return bots, err
+// CompleteGetBots returns all data about all bots
+func CompleteGetBots() (bot.Bots, error) {
+	return fetchBots(false)
 }
 
 // PublicGetCountBots returns the number of active bot until time
@@ -52,7 +35,7 @@ func PublicGetCountBots(untilTime int64) (int64, error) {
 			"$currentSession.upTime"}},
 		untilTime}}}
 
-	count, err := db.Collection.Count(context.Background(), filter)
+	count, err := database.Database.Collection.Count(context.Background(), filter)
 
 	if err != nil {
 		return 0, err
@@ -63,7 +46,7 @@ func PublicGetCountBots(untilTime int64) (int64, error) {
 
 // UpdateBotUptimeAndProfitability updates bot in argument upTime and profitability (using BotID)
 func UpdateBotUptimeAndProfitability(uploadedBot *bot.Bot) (interface{}, error) {
-	collection := db.Collection
+	collection := database.Database.Collection
 	filter := bson.M{"_id": uploadedBot.ID}
 	update := bson.M{"$set": bson.M{
 		"currentSession.upTime":        uploadedBot.CurrentSession.UpTime,
@@ -85,7 +68,7 @@ func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
 	if uploadedBot.CurrentSession.StartedAt == 0 || uploadedBot.CurrentSession.UpTime == 0 {
 		return nil, ErrInvalidData
 	}
-	collection := db.Collection
+	collection := database.Database.Collection
 	// check if bot exists
 	var foundBot bot.Bot
 	filter := bson.D{{"_id", uploadedBot.ID}}
@@ -105,7 +88,7 @@ func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
 
 // GenerateBotID generates a new bot id
 func GenerateBotID() (interface{}, error) {
-	newID, err := db.Collection.InsertOne(context.Background(), bot.Bot{})
+	newID, err := database.Database.Collection.InsertOne(context.Background(), bot.Bot{})
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +123,7 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 		}
 	}
 	filter := bson.D{{"_id", uploadedBot.ID}}
-	updateResult, err := db.Collection.UpdateOne(context.Background(), filter, update)
+	updateResult, err := database.Database.Collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return nil, err
 	}
@@ -149,4 +132,25 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 	}
 	log.Println("Registed new session for bot with id:", uploadedBot.ID)
 	return uploadedBot.ID, err
+}
+
+func fetchBots(filterBots bool) (bot.Bots, error) {
+	bots := bot.Bots{}
+	cur, err := database.Database.Collection.Find(context.Background(), bson.D{{}})
+	if err != nil {
+		return bots, err
+	}
+	defer cur.Close(context.Background())
+	for cur.Next(context.Background()) {
+		var decodedBot bot.Bot
+		err := cur.Decode(&decodedBot)
+		if err != nil {
+			panic(err)
+		}
+		if filterBots {
+			decodedBot.FilterPublicInfo()
+		}
+		bots = append(bots, decodedBot)
+	}
+	return bots, err
 }
