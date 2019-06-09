@@ -6,7 +6,8 @@ import (
 
 // Users access levels
 const (
-	FullAccess = 100
+	FullAccess         = 100
+	EarlyPartnerAccess = 50
 )
 
 // User stores usage info about a specific user identified by Api-Key

@@ -27,7 +27,7 @@ func PublicGetBots(c echo.Context) error {
 // AuthenticatedGetBots returns a json representation of all the bots without filters
 func AuthenticatedGetBots(c echo.Context) error {
 	if IsIPAllowed(c) {
-		if dao.IsAuthorizedUser(c.Request().Header.Get("Api-Key"), model.FullAccess) {
+		if dao.IsAuthorizedUser(c.Request().Header.Get("Api-Key"), model.EarlyPartnerAccess) {
 			bots, err := dao.CompleteGetBots()
 			if err != nil {
 				log.Panic(err)
