@@ -25,7 +25,7 @@ type Session struct {
 type Bot struct {
 	ID             primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	CurrentSession Session            `json:"currentsession,omitempty" bson:"currentSession"`
-	SessionHistory []Session          `json:"sessionsistory,omitempty" bson:"sessionHistory"`
+	SessionHistory []Session          `json:"sessionhistory,omitempty" bson:"sessionHistory"`
 }
 
 // Bots is a slice of Bot
