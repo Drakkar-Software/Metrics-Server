@@ -23,8 +23,8 @@ func PublicGetBots() (bot.Bots, error) {
 }
 
 // CompleteGetBots returns all data about all bots
-func CompleteGetBots() (bot.Bots, error) {
-	return fetchBots(false, false)
+func CompleteGetBots(history bool) (bot.Bots, error) {
+	return fetchBots(false, history)
 }
 
 // PublicGetCountBots returns the number of active bot until time

@@ -10,6 +10,7 @@ func Init(e *echo.Echo) {
 	e.GET("/gen-bot-id", controller.GenerateBotID)
 	e.GET("/metrics/community", controller.PublicGetBots)
 	e.GET("/metrics/full_data", controller.AuthenticatedGetBots)
+	e.GET("/metrics/full_data/history", controller.AuthenticatedGetBotsHistory)
 	e.GET("/metrics/community/count/:years/:months/:days", controller.PublicGetCount)
 	e.POST("/metrics/uptime", controller.UpdateBotUptimeAndProfitability)
 	e.POST("/metrics/register", controller.RegisterBot)

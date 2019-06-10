@@ -26,9 +26,18 @@ func PublicGetBots(c echo.Context) error {
 
 // AuthenticatedGetBots returns a json representation of all the bots without filters
 func AuthenticatedGetBots(c echo.Context) error {
+	return getAuthBots(c, false, model.CurrentAccess)
+}
+
+// AuthenticatedGetBotsHistory returns a json representation of all the bots with historical data without filters
+func AuthenticatedGetBotsHistory(c echo.Context) error {
+	return getAuthBots(c, true, model.HistoricalDataAccess)
+}
+
+func getAuthBots(c echo.Context, history bool, minAccessRight int8) error {
 	if IsIPAllowed(c) {
-		if dao.IsAuthorizedUser(c.Request().Header.Get("Api-Key"), model.EarlyPartnerAccess) {
-			bots, err := dao.CompleteGetBots()
+		if dao.IsAuthorizedUser(c.Request().Header.Get("Api-Key"), minAccessRight) {
+			bots, err := dao.CompleteGetBots(history)
 			if err != nil {
 				log.Panic(err)
 				return c.JSON(http.StatusBadRequest, bots)
