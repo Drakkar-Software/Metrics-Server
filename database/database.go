@@ -3,13 +3,14 @@ package database
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/mongodb/mongo-go-driver/mongo/readpref"
 )
 
-var dBName = "heroku_mq79r21v"
+var dBName = getDBName()
 
 // DB database structure
 type DB struct {
@@ -51,6 +52,14 @@ func (db *DB) Close() error {
 	}
 	fmt.Println("Connection to database closed.")
 	return err
+}
+
+func getDBName() string {
+	urlData, err := url.Parse(DBURI())
+	if err != nil {
+		panic(err)
+	}
+	return urlData.Path[1:]
 }
 
 // DBURI returns the database URI
