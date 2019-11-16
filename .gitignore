@@ -12,6 +12,7 @@
 *.out
 
 .idea/
+data/
 vendor/github.com
 vendor/golang.org
 
