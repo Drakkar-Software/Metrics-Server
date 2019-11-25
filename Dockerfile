@@ -10,9 +10,10 @@ RUN go get -u github.com/golang/dep/cmd/dep \
 FROM alpine
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /go/src/github.com/Drakkar-Software/Metrics-Server/server /server/
+COPY --from=builder /go/src/github.com/Drakkar-Software/Metrics-Server/docker /docker/
 WORKDIR /server
 
 EXPOSE 8080
 
 # Start up
-CMD ["./server"]
+CMD ["/docker/startup.sh"]

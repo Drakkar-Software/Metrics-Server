@@ -1,0 +1,109 @@
+{
+  "jpsType": "install",
+  "jpsVersion": "0.8",
+  "application": {
+    "name": "OctoBot Metrics Server",
+    "homepage": "http://metrics-server.octobot.online",
+    "description": "OctoBot Metrics Server",
+    "settings": {
+        "fields": [{
+            "name": "repo_username",
+            "default": "drakkarsoftware",
+            "caption": "Registry username",
+            "type": "string",
+            "required": true
+        }, {
+            "name": "repo_password",
+            "inputType": "password",
+            "caption": "Registry password",
+            "type": "string",
+            "required": true
+        }, {
+             "name": "repo_registry",
+             "default": "repo.treescale.com",
+             "inputType": "string",
+             "caption": "Registry url",
+             "type": "string",
+             "required": true
+         }, {
+            "name": "app_image",
+            "default": "drakkarsoftware/octobot-metrics-server",
+            "inputType": "string",
+            "caption": "App image",
+            "type": "string",
+            "required": true
+        }, {
+             "name": "bl_image",
+             "default": "nginx",
+             "inputType": "string",
+             "caption": "Balancer image",
+             "type": "string",
+             "required": true
+         }]
+    },
+    "globals": {
+        "database_name": "metrics",
+        "database_username": "${fn.uuid}",
+        "database_password": "${fn.password}",
+        "database_port": 27017,
+        "database_host": "db",
+        "app_port": 8080
+    },
+    "env": {
+      "topology": {
+        "nodes": [
+          {
+            "cloudlets": 1,
+            "nodeGroup": "bl",
+            "nodeType": "nginx",
+            "docker": {
+                "links": "cp:app"
+            }
+          },
+          {
+            "cloudlets": 2,
+            "nodeGroup": "cp",
+            "docker": {
+              "image": "${settings.app_image}",
+              "registry": {
+                  "user": "${settings.repo_username}",
+                  "password": "${settings.repo_password}",
+                  "url": "${settings.repo_registry}"
+              },
+              "env": {
+                  "APP_PORT": "${globals.app_port}",
+                  "DATABASE_HOST": "${globals.database_host}",
+                  "DATABASE_PORT": "${globals.database_port}",
+                  "MONGODB_URI": "mongodb://${globals.database_username}:${globals.database_password}@${globals.database_host}:${globals.database_port}/${globals.database_name}"
+              },
+              "links": "nosqldb:db"
+            }
+          },
+          {
+            "cloudlets": 2,
+            "nodeGroup": "nosqldb",
+            "docker": {
+                "image": "mongo:4.2.1",
+                "env": {
+                    "MONGO_INITDB_ROOT_PASSWORD": "${globals.database_password}",
+                    "MONGO_INITDB_ROOT_USERNAME": "${globals.database_username}"
+                },
+                "volumes": [
+                    "/data/db"
+                ]
+            }
+          }
+        ],
+        "ssl": true
+      },
+      "upload": [
+          {
+             "nodeGroup": "bl",
+             "nodeType": "nginx",
+             "sourcePath": "https://raw.githubusercontent.com/Drakkar-Software/Website/development/docker/nginx/nginx.conf",
+             "destPath": "/etc/nginx/nginx.conf"
+          }
+      ]
+    }
+  }
+}

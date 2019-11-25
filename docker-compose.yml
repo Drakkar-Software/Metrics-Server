@@ -19,12 +19,15 @@ services:
   web:
     image: drakkarsoftware/metrics-server.octobot.online
     environment:
+      - DATABASE_HOST=db,
+      - DATABASE_PORT=27017,
       - MONGODB_URI=mongodb://db:27017/metrics
+      - APP_PORT=8080
     hostname: metrics-server.octobot.online
     links:
       - db
     ports:
-      - 80:8080
+      - 8080:8080
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "nc -z 127.0.0.1 8080 || exit 1"]
