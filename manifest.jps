@@ -71,7 +71,7 @@
                   "url": "${settings.repo_registry}"
               },
               "env": {
-                  "APP_PORT": "${globals.app_port}",
+                  "PORT": "${globals.app_port}",
                   "DATABASE_HOST": "${globals.database_host}",
                   "DATABASE_PORT": "${globals.database_port}",
                   "MONGODB_URI": "mongodb://${globals.database_username}:${globals.database_password}@${globals.database_host}:${globals.database_port}/${globals.database_name}"

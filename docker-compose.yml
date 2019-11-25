@@ -22,7 +22,7 @@ services:
       - DATABASE_HOST=db,
       - DATABASE_PORT=27017,
       - MONGODB_URI=mongodb://db:27017/metrics
-      - APP_PORT=8080
+      - PORT=8080
     hostname: metrics-server.octobot.online
     links:
       - db
