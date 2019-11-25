@@ -25,8 +25,8 @@ func main() {
 }
 
 func getPort() string {
-	port := os.Getenv("PORT")
-	if port == "" {
+	port, exists := os.LookupEnv("PORT")
+	if !exists || port == "" {
 		port = "8080"
 	}
 	return port

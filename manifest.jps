@@ -95,15 +95,7 @@
           }
         ],
         "ssl": true
-      },
-      "upload": [
-          {
-             "nodeGroup": "bl",
-             "nodeType": "nginx",
-             "sourcePath": "https://raw.githubusercontent.com/Drakkar-Software/Website/development/docker/nginx/nginx.conf",
-             "destPath": "/etc/nginx/nginx.conf"
-          }
-      ]
+      }
     }
   }
 }
