@@ -6,8 +6,8 @@ import (
 
 	"github.com/Drakkar-Software/Metrics-Server/database"
 	"github.com/Drakkar-Software/Metrics-Server/routes"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {

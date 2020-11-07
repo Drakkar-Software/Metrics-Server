@@ -10,7 +10,7 @@ import (
 
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 // PublicGetBots returns a json representation of all the bots

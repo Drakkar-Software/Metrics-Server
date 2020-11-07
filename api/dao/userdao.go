@@ -5,7 +5,7 @@ import (
 
 	"github.com/Drakkar-Software/Metrics-Server/api/model"
 	"github.com/Drakkar-Software/Metrics-Server/database"
-	"github.com/mongodb/mongo-go-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // IsAuthorizedUser returns true if the given user (identified by API-Key) is authorized to get this level of info

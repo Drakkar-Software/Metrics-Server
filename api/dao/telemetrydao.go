@@ -8,7 +8,7 @@ import (
 	bot "github.com/Drakkar-Software/Metrics-Server/api/model"
 	"github.com/Drakkar-Software/Metrics-Server/database"
 
-	"github.com/mongodb/mongo-go-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // ErrBotNotFound is returned new a bot is not found in database
@@ -35,7 +35,7 @@ func PublicGetCountBots(untilTime int64) (int64, error) {
 			"$currentSession.upTime"}},
 		untilTime}}}
 
-	count, err := database.Database.Collection.Count(context.Background(), filter)
+	count, err := database.Database.Collection.CountDocuments(context.Background(), filter)
 
 	if err != nil {
 		return 0, err
@@ -72,7 +72,7 @@ func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
 	// check if bot exists
 	var foundBot bot.Bot
 	filter := bson.D{{"_id", uploadedBot.ID}}
-	count, err := collection.Count(context.Background(), filter)
+	count, err := collection.CountDocuments(context.Background(), filter)
 	if err != nil {
 		return nil, err
 	}

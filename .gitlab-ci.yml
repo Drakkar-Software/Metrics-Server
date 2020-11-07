@@ -15,7 +15,7 @@ stages:
 build-docker-image:
   stage: build
   tags:
-    - dind
+    - gitlab-org-docker
   script:
     - docker pull $CI_REGISTRY_IMAGE:latest || true
     - docker build --pull --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
@@ -27,7 +27,7 @@ test-docker-image:
   before_script:
     - ''
   tags:
-    - build-in-docker
+    - gitlab-org-docker
   script:
     - ''
 
@@ -39,7 +39,7 @@ Push latest:
     GIT_STRATEGY: none
   stage: push
   tags:
-    - dind
+    - gitlab-org-docker
   only:
     # Only "master" should be tagged "latest"
     - master
@@ -61,7 +61,7 @@ Push tag:
     GIT_STRATEGY: none
   stage: push
   tags:
-    - dind
+    - gitlab-org-docker
   only:
     # We want this job to be run on tags only.
     - tags
