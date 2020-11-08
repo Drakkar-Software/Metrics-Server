@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Drakkar-Software/Metrics-Server/api/controller"
 	"net/http"
 	"os"
 
@@ -17,6 +18,7 @@ func main() {
 	}
 	e := echo.New()
 	routes.Init(e)
+	controller.Init()
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowMethods: []string{http.MethodGet, http.MethodPost},

@@ -106,20 +106,17 @@ func GenerateBotID(c echo.Context) error {
 
 // UpdateBotUptimeAndProfitability updates a bot uptime
 func UpdateBotUptimeAndProfitability(c echo.Context) error {
-	if IsIPAllowed(c) {
-		bot := new(model.Bot)
-		_ = c.Bind(bot)
-		id, err := dao.UpdateBotUptimeAndProfitability(bot)
-		if err != nil {
-			if err == dao.ErrBotNotFound {
-				return c.JSON(http.StatusNotFound, id)
-			}
-			log.Println(err, bot.ID)
-			return c.JSON(http.StatusBadRequest, id)
+	bot := new(model.Bot)
+	_ = c.Bind(bot)
+	id, err := dao.UpdateBotUptimeAndProfitability(bot)
+	if err != nil {
+		if err == dao.ErrBotNotFound {
+			return c.JSON(http.StatusNotFound, id)
 		}
-		return c.JSON(http.StatusOK, id)
+		log.Println(err, bot.ID)
+		return c.JSON(http.StatusBadRequest, id)
 	}
-	return c.JSON(http.StatusTooManyRequests, nil)
+	return c.JSON(http.StatusOK, id)
 }
 
 // RegisterBot registers a bot as started (creates a new bot if necessary)

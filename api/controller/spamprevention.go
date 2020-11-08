@@ -3,17 +3,28 @@ package controller
 import (
 	"log"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-var maxRequestsPerDay = uint16(10000)
+var maxRequestsPerDay = 5000
+
+func Init(){
+	maxReq, err := strconv.Atoi(os.Getenv("DAILY_REQUESTS_LIMIT"))
+	if err != nil {
+		log.Println("Using default max limit per day:", maxRequestsPerDay)
+	}else{
+		log.Println("Using max limit per day:", maxReq)
+		maxRequestsPerDay = maxReq
+	}
+}
 
 type requestStats struct {
 	Day          int
-	RequestCount uint16
+	RequestCount int
 	mutex        sync.RWMutex
 }
 
@@ -45,30 +56,25 @@ var requestStatsByIP = make(map[string]*requestStats)
 
 // IsIPAllowed returns false if API is getting spammed
 func IsIPAllowed(c echo.Context) bool {
-	allowedExceptions := os.Getenv("ALLOWED_INFINITE_REQUESTS_HOST")
-	if c.Request().Host != allowedExceptions{
-		ip := c.RealIP()
-		stats, exists := requestStatsByIP[ip]
-		if exists {
-			// not first request
-			now := time.Now().Day()
-			if stats.Day != now {
-				// new day: reset counter
-				stats.newDay(now)
-			} else {
-				// check counter
-				if stats.isMaxedForToday() {
-					log.Println("Spam attack")
-					return false
-				}
-				stats.incCounter()
-			}
+	ip := c.RealIP()
+	stats, exists := requestStatsByIP[ip]
+	if exists {
+		// not first request
+		now := time.Now().Day()
+		if stats.Day != now {
+			// new day: reset counter
+			stats.newDay(now)
 		} else {
-			// first request: start stats
-			requestStatsByIP[ip] = newRequestStats()
+			// check counter
+			if stats.isMaxedForToday() {
+				log.Println("Spam attack")
+				return false
+			}
+			stats.incCounter()
 		}
-	}else{
-		log.Println("Allowed infinite request for this host")
+	} else {
+		// first request: start stats
+		requestStatsByIP[ip] = newRequestStats()
 	}
 	return true
 }
