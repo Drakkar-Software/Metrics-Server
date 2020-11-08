@@ -45,7 +45,6 @@ var requestStatsByIP = make(map[string]*requestStats)
 
 // IsIPAllowed returns false if API is getting spammed
 func IsIPAllowed(c echo.Context) bool {
-	// TODO exception for heroku metrics.octobot.online
 	allowedExceptions := os.Getenv("ALLOWED_INFINITE_REQUESTS_HOST")
 	if c.Request().Host != allowedExceptions{
 		ip := c.RealIP()
@@ -68,6 +67,8 @@ func IsIPAllowed(c echo.Context) bool {
 			// first request: start stats
 			requestStatsByIP[ip] = newRequestStats()
 		}
+	}else{
+		log.Println("Allowed infinite request for this host")
 	}
 	return true
 }
