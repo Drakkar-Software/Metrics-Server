@@ -6,8 +6,8 @@ import (
 
 	"github.com/Drakkar-Software/Metrics-Server/database"
 	"github.com/Drakkar-Software/Metrics-Server/routes"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -17,6 +17,7 @@ func main() {
 	}
 	e := echo.New()
 	routes.Init(e)
+	e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowMethods: []string{http.MethodGet, http.MethodPost},
 	}))

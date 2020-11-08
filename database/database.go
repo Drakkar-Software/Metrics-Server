@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 
-	"github.com/mongodb/mongo-go-driver/mongo"
-	"github.com/mongodb/mongo-go-driver/mongo/readpref"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 var dBName = getDBName()
@@ -29,11 +31,14 @@ func Init() error {
 
 // initialize connects to database and checks connection
 func (db *DB) initialize() error {
-	client, err := mongo.Connect(context.Background(), DBURI())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(DBURI()))
 	if err != nil {
 		return err
 	}
-	err = client.Ping(context.Background(), readpref.Primary())
+	defer cancel()
+
+	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		return err
 	}
@@ -46,7 +51,7 @@ func (db *DB) initialize() error {
 
 // Close from the database
 func (db *DB) Close() error {
-	err := db.Client.Disconnect(context.TODO())
+	err := db.Client.Disconnect(context.Background())
 	if err != nil {
 		return err
 	}

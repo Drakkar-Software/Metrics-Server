@@ -8,8 +8,7 @@ This server is use to by the /community tab of OctoBot.
 
 # Installation
 
-install [dep](https://github.com/golang/dep)
-run the following command to download dependancies
+Requires Go 1.11+ to manage dependencies which are automatically fetched.
 ```bash
-dep ensure
+go build 
 ```

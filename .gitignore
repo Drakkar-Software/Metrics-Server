@@ -21,3 +21,4 @@ debug
 \.vscode/
 
 Gopkg\.lock
+vendor

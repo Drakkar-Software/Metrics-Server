@@ -2,7 +2,7 @@ package route
 
 import (
 	"github.com/Drakkar-Software/Metrics-Server/api/controller"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 // Init registers the server routes

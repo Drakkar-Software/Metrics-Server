@@ -2,17 +2,18 @@ package controller
 
 import (
 	"log"
+	"os"
 	"sync"
 	"time"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
-var maxRequestsPerDay = uint8(100)
+var maxRequestsPerDay = uint16(10000)
 
 type requestStats struct {
 	Day          int
-	RequestCount uint8
+	RequestCount uint16
 	mutex        sync.RWMutex
 }
 
@@ -44,25 +45,29 @@ var requestStatsByIP = make(map[string]*requestStats)
 
 // IsIPAllowed returns false if API is getting spammed
 func IsIPAllowed(c echo.Context) bool {
-	ip := c.RealIP()
-	stats, exists := requestStatsByIP[ip]
-	if exists {
-		// not first request
-		now := time.Now().Day()
-		if stats.Day != now {
-			// new day: reset counter
-			stats.newDay(now)
-		} else {
-			// check counter
-			if stats.isMaxedForToday() {
-				log.Println("Spam attack")
-				return false
+	// TODO exception for heroku metrics.octobot.online
+	allowedExceptions := os.Getenv("ALLOWED_INFINITE_REQUESTS_HOST")
+	if c.Request().Host != allowedExceptions{
+		ip := c.RealIP()
+		stats, exists := requestStatsByIP[ip]
+		if exists {
+			// not first request
+			now := time.Now().Day()
+			if stats.Day != now {
+				// new day: reset counter
+				stats.newDay(now)
+			} else {
+				// check counter
+				if stats.isMaxedForToday() {
+					log.Println("Spam attack")
+					return false
+				}
+				stats.incCounter()
 			}
-			stats.incCounter()
+		} else {
+			// first request: start stats
+			requestStatsByIP[ip] = newRequestStats()
 		}
-	} else {
-		// first request: start stats
-		requestStatsByIP[ip] = newRequestStats()
 	}
 	return true
 }
