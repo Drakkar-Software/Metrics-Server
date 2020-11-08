@@ -35,6 +35,7 @@ func AuthenticatedGetBotsHistory(c echo.Context) error {
 }
 
 func getAuthBots(c echo.Context, history bool, minAccessRight int8) error {
+	log.Println(c.Request().Header)
 	if IsIPAllowed(c) {
 		if dao.IsAuthorizedUser(c.Request().Header.Get("Api-Key"), minAccessRight) {
 			bots, err := dao.CompleteGetBots(history)
