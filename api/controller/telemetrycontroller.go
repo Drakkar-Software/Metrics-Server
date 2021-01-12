@@ -26,6 +26,7 @@ func PublicGetBots(c echo.Context) error {
 	return c.JSON(http.StatusOK, bots)
 }
 
+// TopTradingModes return the top of bot current sessions exchanges
 func TopExchanges(c echo.Context) error {
 	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
@@ -50,6 +51,7 @@ func TopExchanges(c echo.Context) error {
 	return c.JSON(http.StatusOK, getSortedTop(top))
 }
 
+// TopTradingModes return the top of bot current sessions trading modes
 func TopTradingModes(c echo.Context) error {
 	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
@@ -76,13 +78,15 @@ func TopTradingModes(c echo.Context) error {
 	return c.JSON(http.StatusOK, getSortedTop(top))
 }
 
+// TopProfitabilities return the top of bot current sessions profitability with a limit of maxValues
 func TopProfitabilities(c echo.Context) error {
+	maxValues := 3
 	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	countParam, err := strconv.ParseInt(c.Param("count"), 10, 0)
-	if err != nil || countParam > 3 {
+	if err != nil || int(countParam) > maxValues {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 	bots, err := dao.PublicGetBots(sinceParam)
@@ -95,7 +99,12 @@ func TopProfitabilities(c echo.Context) error {
 	sort.SliceStable(profitabilities, func(i, j int) bool {
 		return profitabilities[i] > profitabilities[j]
 	})
-	return c.JSON(http.StatusOK, profitabilities[:countParam])
+
+	returnedProfitabilities := profitabilities
+	if len(profitabilities) >= int(countParam){
+		returnedProfitabilities = profitabilities[:countParam]
+	}
+	return c.JSON(http.StatusOK, returnedProfitabilities)
 }
 
 // AuthenticatedGetBots returns a json representation of all the bots without filters
