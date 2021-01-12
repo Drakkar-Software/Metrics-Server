@@ -2,7 +2,9 @@ package controller
 
 import (
 	"log"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Drakkar-Software/Metrics-Server/api/dao"
@@ -15,13 +17,94 @@ import (
 
 // PublicGetBots returns a json representation of all the bots
 func PublicGetBots(c echo.Context) error {
-	bots, err := dao.PublicGetBots()
+	bots, err := dao.PublicGetBots(0)
 	if err != nil {
 		log.Panic(err)
 		return c.JSON(http.StatusBadRequest, bots)
 	}
 
 	return c.JSON(http.StatusOK, bots)
+}
+
+// TopTradingModes return the top of bot current sessions exchanges
+func TopExchanges(c echo.Context) error {
+	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	bots, err := dao.PublicGetBots(sinceParam)
+	if err != nil {
+		log.Panic(err)
+		return c.JSON(http.StatusBadRequest, bots)
+	}
+	top := make(map[string]int)
+	for _, bot := range bots {
+		for _, exchange := range bot.CurrentSession.Exchanges {
+			val, present := top[exchange]
+			if present {
+				top[exchange] = val + 1
+			}else{
+				top[exchange] = 1
+			}
+		}
+	}
+	return c.JSON(http.StatusOK, getSortedTop(top))
+}
+
+// TopTradingModes return the top of bot current sessions trading modes
+func TopTradingModes(c echo.Context) error {
+	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	bots, err := dao.PublicGetBots(sinceParam)
+	if err != nil {
+		log.Panic(err)
+		return c.JSON(http.StatusBadRequest, bots)
+	}
+	top := make(map[string]int)
+	for _, bot := range bots {
+		for _, evalOrTradingMode := range bot.CurrentSession.EvalConfig {
+			if strings.HasSuffix(evalOrTradingMode, "TradingMode") {
+				val, present := top[evalOrTradingMode]
+				if present {
+					top[evalOrTradingMode] = val + 1
+				}else{
+					top[evalOrTradingMode] = 1
+				}
+			}
+		}
+	}
+	return c.JSON(http.StatusOK, getSortedTop(top))
+}
+
+// TopProfitabilities return the top of bot current sessions profitability with a limit of maxValues
+func TopProfitabilities(c echo.Context) error {
+	maxValues := 3
+	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	countParam, err := strconv.ParseInt(c.Param("count"), 10, 0)
+	if err != nil || int(countParam) > maxValues {
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	bots, err := dao.PublicGetBots(sinceParam)
+	profitabilities := make([]float32, len(bots))
+	i := 0
+	for _, bot := range bots {
+		profitabilities[i] = bot.CurrentSession.Profitability
+		i++
+	}
+	sort.SliceStable(profitabilities, func(i, j int) bool {
+		return profitabilities[i] > profitabilities[j]
+	})
+
+	returnedProfitabilities := profitabilities
+	if len(profitabilities) >= int(countParam){
+		returnedProfitabilities = profitabilities[:countParam]
+	}
+	return c.JSON(http.StatusOK, returnedProfitabilities)
 }
 
 // AuthenticatedGetBots returns a json representation of all the bots without filters
@@ -32,6 +115,19 @@ func AuthenticatedGetBots(c echo.Context) error {
 // AuthenticatedGetBotsHistory returns a json representation of all the bots with historical data without filters
 func AuthenticatedGetBotsHistory(c echo.Context) error {
 	return getAuthBots(c, true, model.HistoricalDataAccess)
+}
+
+func getSortedTop(top map[string]int) []model.Top {
+	topList := make([]model.Top, len(top))
+	i := 0
+	for key, value := range top {
+		topList[i] = model.Top{Name: key, Count: value}
+		i++
+	}
+	sort.SliceStable(topList, func(i, j int) bool {
+		return topList[i].Count > topList[j].Count
+	})
+	return topList
 }
 
 func getAuthBots(c echo.Context, history bool, minAccessRight int8) error {

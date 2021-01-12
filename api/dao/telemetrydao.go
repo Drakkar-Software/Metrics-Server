@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	bot "github.com/Drakkar-Software/Metrics-Server/api/model"
 	"github.com/Drakkar-Software/Metrics-Server/database"
@@ -18,13 +19,13 @@ var ErrBotNotFound = errors.New("bot not found")
 var ErrInvalidData = errors.New("invalid data")
 
 // PublicGetBots returns filtered data about all bots
-func PublicGetBots() (bot.Bots, error) {
-	return fetchBots(true, false)
+func PublicGetBots(since int64) (bot.Bots, error) {
+	return fetchBots(false, false, since)
 }
 
 // CompleteGetBots returns all data about all bots
 func CompleteGetBots(history bool) (bot.Bots, error) {
-	return fetchBots(false, history)
+	return fetchBots(false, history, 0)
 }
 
 // PublicGetCountBots returns the number of active bot until time
@@ -65,7 +66,10 @@ func UpdateBotUptimeAndProfitability(uploadedBot *bot.Bot) (interface{}, error) 
 
 // RegisterOrUpdate updates a bot if already in database or registers a new bot called after few minutes a bot is running
 func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
-	if uploadedBot.CurrentSession.StartedAt == 0 || uploadedBot.CurrentSession.UpTime == 0 {
+	// Allow a post for 24h in the future but not more
+	maxTime := time.Now().AddDate(0, 0, 1).Unix()
+	if uploadedBot.CurrentSession.StartedAt == 0 || uploadedBot.CurrentSession.UpTime == 0 ||
+		int64(uploadedBot.CurrentSession.StartedAt + uploadedBot.CurrentSession.UpTime) > maxTime {
 		return nil, ErrInvalidData
 	}
 	collection := database.Database.Collection
@@ -134,9 +138,17 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 	return uploadedBot.ID, err
 }
 
-func fetchBots(filterBots bool, includeHistory bool) (bot.Bots, error) {
+func fetchBots(filterBots bool, includeHistory bool, since int64) (bot.Bots, error) {
 	bots := bot.Bots{}
-	cur, err := database.Database.Collection.Find(context.Background(), bson.D{{}})
+	filter := bson.M{}
+	if since > 0 {
+		filter = bson.M{"$expr": bson.M{"$gt": bson.A{
+			bson.M{"$add": bson.A{
+				"$currentSession.startedAt",
+				"$currentSession.upTime"}},
+			since}}}
+	}
+	cur, err := database.Database.Collection.Find(context.Background(), filter)
 	if err != nil {
 		return bots, err
 	}
