@@ -32,14 +32,14 @@ type Bot struct {
 type Bots []Bot
 
 // FilterPublicInfo Resets non public info
-func (bot *Bot) FilterPublicInfo() {
+func (bot *Bot) FilterPublicInfo(filterProfitability bool) {
 	bot.ID = primitive.NilObjectID
-	bot.CurrentSession.FilterPublicInfo()
+	bot.CurrentSession.FilterPublicInfo(filterProfitability)
 	bot.SessionHistory = nil
 }
 
 // FilterPublicInfo Resets non public info
-func (session *Session) FilterPublicInfo() {
+func (session *Session) FilterPublicInfo(filterProfitability bool) {
 	session.UpTime = session.StartedAt + session.UpTime
 	session.StartedAt = 0
 	session.Simulator = false
@@ -48,6 +48,8 @@ func (session *Session) FilterPublicInfo() {
 	session.Type = ""
 	session.Platform = ""
 	session.PortfolioValue = 0
-	session.Profitability = 0
 	session.ReferenceMaket = ""
+	if filterProfitability {
+		session.Profitability = 0
+	}
 }

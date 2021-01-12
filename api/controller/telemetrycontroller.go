@@ -15,13 +15,29 @@ import (
 
 // PublicGetBots returns a json representation of all the bots
 func PublicGetBots(c echo.Context) error {
-	bots, err := dao.PublicGetBots()
+	bots, err := dao.PublicGetBots(true)
 	if err != nil {
 		log.Panic(err)
 		return c.JSON(http.StatusBadRequest, bots)
 	}
 
 	return c.JSON(http.StatusOK, bots)
+}
+
+// PublicGetRecentBotsWithProfitability returns a json representation of all the recent bots
+// with their profitability
+func PublicGetRecentBotsWithProfitability(c echo.Context) error {
+	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, nil)
+	}
+	bots, err := dao.PublicGetBots(false)
+	if err != nil {
+		log.Panic(err)
+		return c.JSON(http.StatusBadRequest, getOnlyRecentBots(bots, int(sinceParam)))
+	}
+
+	return c.JSON(http.StatusOK, getOnlyRecentBots(bots, int(sinceParam)))
 }
 
 // AuthenticatedGetBots returns a json representation of all the bots without filters
@@ -32,6 +48,18 @@ func AuthenticatedGetBots(c echo.Context) error {
 // AuthenticatedGetBotsHistory returns a json representation of all the bots with historical data without filters
 func AuthenticatedGetBotsHistory(c echo.Context) error {
 	return getAuthBots(c, true, model.HistoricalDataAccess)
+}
+
+func getOnlyRecentBots(bots model.Bots, since int) model.Bots {
+	// Create a zero-length slice with the same underlying array
+	filteredBots := bots[:0]
+	for _, bot := range bots {
+		if bot.CurrentSession.UpTime >= since {
+			// Append desired values to slice
+			filteredBots = append(filteredBots, bot)
+		}
+	}
+	return filteredBots
 }
 
 func getAuthBots(c echo.Context, history bool, minAccessRight int8) error {

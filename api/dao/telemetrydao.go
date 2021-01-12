@@ -18,13 +18,13 @@ var ErrBotNotFound = errors.New("bot not found")
 var ErrInvalidData = errors.New("invalid data")
 
 // PublicGetBots returns filtered data about all bots
-func PublicGetBots() (bot.Bots, error) {
-	return fetchBots(true, false)
+func PublicGetBots(filterProfitability bool) (bot.Bots, error) {
+	return fetchBots(true, false, filterProfitability)
 }
 
 // CompleteGetBots returns all data about all bots
 func CompleteGetBots(history bool) (bot.Bots, error) {
-	return fetchBots(false, history)
+	return fetchBots(false, history, false)
 }
 
 // PublicGetCountBots returns the number of active bot until time
@@ -134,7 +134,7 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 	return uploadedBot.ID, err
 }
 
-func fetchBots(filterBots bool, includeHistory bool) (bot.Bots, error) {
+func fetchBots(filterBots bool, includeHistory bool, filterProfitability bool) (bot.Bots, error) {
 	bots := bot.Bots{}
 	cur, err := database.Database.Collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
@@ -148,7 +148,7 @@ func fetchBots(filterBots bool, includeHistory bool) (bot.Bots, error) {
 			panic(err)
 		}
 		if filterBots {
-			decodedBot.FilterPublicInfo()
+			decodedBot.FilterPublicInfo(filterProfitability)
 		}
 		if !includeHistory {
 			decodedBot.SessionHistory = nil
