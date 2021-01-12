@@ -66,7 +66,10 @@ func UpdateBotUptimeAndProfitability(uploadedBot *bot.Bot) (interface{}, error) 
 
 // RegisterOrUpdate updates a bot if already in database or registers a new bot called after few minutes a bot is running
 func RegisterOrUpdate(uploadedBot *bot.Bot) (interface{}, error) {
-	if uploadedBot.CurrentSession.StartedAt == 0 || uploadedBot.CurrentSession.UpTime == 0 {
+	// Allow a post for 24h in the future but not more
+	maxTime := time.Now().AddDate(0, 0, 1).Unix()
+	if uploadedBot.CurrentSession.StartedAt == 0 || uploadedBot.CurrentSession.UpTime == 0 ||
+		int64(uploadedBot.CurrentSession.StartedAt + uploadedBot.CurrentSession.UpTime) > maxTime {
 		return nil, ErrInvalidData
 	}
 	collection := database.Database.Collection
