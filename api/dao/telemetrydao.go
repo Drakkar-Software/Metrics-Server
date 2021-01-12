@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	bot "github.com/Drakkar-Software/Metrics-Server/api/model"
 	"github.com/Drakkar-Software/Metrics-Server/database"
@@ -18,13 +19,13 @@ var ErrBotNotFound = errors.New("bot not found")
 var ErrInvalidData = errors.New("invalid data")
 
 // PublicGetBots returns filtered data about all bots
-func PublicGetBots() (bot.Bots, error) {
-	return fetchBots(true, false)
+func PublicGetBots(since int64) (bot.Bots, error) {
+	return fetchBots(false, false, since)
 }
 
 // CompleteGetBots returns all data about all bots
 func CompleteGetBots(history bool) (bot.Bots, error) {
-	return fetchBots(false, history)
+	return fetchBots(false, history, 0)
 }
 
 // PublicGetCountBots returns the number of active bot until time
@@ -134,9 +135,17 @@ func registerNewBotSession(uploadedBot *bot.Bot, foundBot *bot.Bot) (interface{}
 	return uploadedBot.ID, err
 }
 
-func fetchBots(filterBots bool, includeHistory bool) (bot.Bots, error) {
+func fetchBots(filterBots bool, includeHistory bool, since int64) (bot.Bots, error) {
 	bots := bot.Bots{}
-	cur, err := database.Database.Collection.Find(context.Background(), bson.D{{}})
+	filter := bson.M{}
+	if since > 0 {
+		filter = bson.M{"$expr": bson.M{"$gt": bson.A{
+			bson.M{"$add": bson.A{
+				"$currentSession.startedAt",
+				"$currentSession.upTime"}},
+			since}}}
+	}
+	cur, err := database.Database.Collection.Find(context.Background(), filter)
 	if err != nil {
 		return bots, err
 	}
