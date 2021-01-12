@@ -20,7 +20,7 @@ var ErrInvalidData = errors.New("invalid data")
 
 // PublicGetBots returns filtered data about all bots
 func PublicGetBots(since int64) (bot.Bots, error) {
-	return fetchBots(false, false, since)
+	return fetchBots(true, false, since)
 }
 
 // CompleteGetBots returns all data about all bots
