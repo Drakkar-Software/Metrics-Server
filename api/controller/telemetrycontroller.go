@@ -17,7 +17,7 @@ import (
 
 // PublicGetBots returns a json representation of all the bots
 func PublicGetBots(c echo.Context) error {
-	bots, err := dao.PublicGetBots(0)
+	bots, err := dao.PublicGetBots(0, true)
 	if err != nil {
 		log.Panic(err)
 		return c.JSON(http.StatusBadRequest, bots)
@@ -32,7 +32,7 @@ func TopExchanges(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	bots, err := dao.PublicGetBots(sinceParam)
+	bots, err := dao.PublicGetBots(sinceParam, false)
 	if err != nil {
 		log.Panic(err)
 		return c.JSON(http.StatusBadRequest, bots)
@@ -57,7 +57,7 @@ func TopTradingModes(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	bots, err := dao.PublicGetBots(sinceParam)
+	bots, err := dao.PublicGetBots(sinceParam, false)
 	if err != nil {
 		log.Panic(err)
 		return c.JSON(http.StatusBadRequest, bots)
@@ -89,7 +89,7 @@ func TopProfitabilities(c echo.Context) error {
 	if err != nil || int(countParam) > maxValues {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	bots, err := dao.PublicGetBots(sinceParam)
+	bots, err := dao.PublicGetBots(sinceParam, false)
 	profitabilities := make([]float32, len(bots))
 	i := 0
 	for _, bot := range bots {

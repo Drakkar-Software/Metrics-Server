@@ -19,8 +19,8 @@ var ErrBotNotFound = errors.New("bot not found")
 var ErrInvalidData = errors.New("invalid data")
 
 // PublicGetBots returns filtered data about all bots
-func PublicGetBots(since int64) (bot.Bots, error) {
-	return fetchBots(true, false, since)
+func PublicGetBots(since int64, filterBots bool) (bot.Bots, error) {
+	return fetchBots(filterBots, false, since)
 }
 
 // CompleteGetBots returns all data about all bots
