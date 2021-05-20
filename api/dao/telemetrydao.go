@@ -52,6 +52,7 @@ func UpdateBotUptimeAndProfitability(uploadedBot *bot.Bot) (interface{}, error) 
 	update := bson.M{"$set": bson.M{
 		"currentSession.upTime":        uploadedBot.CurrentSession.UpTime,
 		"currentSession.profitability": uploadedBot.CurrentSession.Profitability,
+		"currentSession.tradedVolumes": uploadedBot.CurrentSession.TradedVolumes,
 	},
 	}
 	updateResult, err := collection.UpdateOne(context.Background(), filter, update)
