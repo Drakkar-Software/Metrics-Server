@@ -21,6 +21,7 @@ type Session struct {
 	PortfolioValue float32  `json:"portfoliovalue,omitempty" bson:"portfolioValue"`
 	Profitability  float32  `json:"profitability,omitempty" bson:"profitability"`
 	TradedVolumes  map[string]float32  `json:"tradedvolumes,omitempty" bson:"tradedVolumes"`
+	Supports  map[string][]string  `json:"supports,omitempty" bson:"supports"`
 }
 
 // Bot stores usage info about a specific bot identified by BotID
@@ -51,4 +52,5 @@ func (session *Session) FilterPublicInfo() {
 	session.Profitability = 0
 	session.TradedVolumes = nil
 	session.ReferenceMaket = ""
+	session.Supports = nil
 }
