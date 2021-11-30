@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/Drakkar-Software/Metrics-Server/api/caches"
 	"log"
 	"sort"
 	"strconv"
@@ -32,6 +33,10 @@ func TopExchanges(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
+	value, exists := caches.GetExchangeTop(sinceParam)
+	if exists{
+		return c.JSON(http.StatusOK, value)
+	}
 	bots, err := dao.PublicGetBots(sinceParam, false)
 	if err != nil {
 		log.Panic(err)
@@ -48,7 +53,9 @@ func TopExchanges(c echo.Context) error {
 			}
 		}
 	}
-	return c.JSON(http.StatusOK, getSortedTop(top))
+	sortedTop := getSortedTop(top)
+	caches.SetExchangeTop(sinceParam, sortedTop)
+	return c.JSON(http.StatusOK, sortedTop)
 }
 
 // TopTradingModes return the top of bot current sessions trading modes
@@ -56,6 +63,10 @@ func TopTradingModes(c echo.Context) error {
 	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
+	}
+	value, exists := caches.GetTradingModeTop(sinceParam)
+	if exists{
+		return c.JSON(http.StatusOK, value)
 	}
 	bots, err := dao.PublicGetBots(sinceParam, false)
 	if err != nil {
@@ -75,7 +86,9 @@ func TopTradingModes(c echo.Context) error {
 			}
 		}
 	}
-	return c.JSON(http.StatusOK, getSortedTop(top))
+	sortedTop := getSortedTop(top)
+	caches.SetTradingModeTop(sinceParam, sortedTop)
+	return c.JSON(http.StatusOK, sortedTop)
 }
 
 // TopProfitabilities return the top of bot current sessions profitability with a limit of maxValues
@@ -169,21 +182,21 @@ func PublicGetCount(c echo.Context) error {
 		log.Panic(err)
 	}
 
+	untilTime := int64(0)
 	// returns full total if params are all zeros
-	if years == 0 && months == 0 && days == 0 {
-		totalBots, err := dao.PublicGetCountBots(0)
-		if err != nil {
-			log.Panic(err)
-		}
-		jsonMap["total"] = totalBots
-	} else {
+	if !(years == 0 && months == 0 && days == 0) {
 		lastMonthTimeStamp := time.Now().AddDate(years, months, days)
-		totalBots, err := dao.PublicGetCountBots(lastMonthTimeStamp.Unix())
+		untilTime  = lastMonthTimeStamp.Unix()
+	}
+	totalBots, exists := caches.GetBotCount(untilTime)
+	if !exists {
+		totalBots, err = dao.PublicGetCountBots(untilTime)
 		if err != nil {
 			log.Panic(err)
 		}
-		jsonMap["total"] = totalBots
+		caches.SetBotCount(untilTime, totalBots)
 	}
+	jsonMap["total"] = totalBots
 	return c.JSON(http.StatusOK, jsonMap)
 }
 
