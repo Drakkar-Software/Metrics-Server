@@ -179,7 +179,12 @@ func PublicGetCount(c echo.Context) error {
 
 	days, err := strconv.Atoi(daysParam)
 	if err != nil {
-		log.Panic(err)
+		// try removing request params
+		splitDays := strings.Split(daysParam, "&")
+		days, err = strconv.Atoi(splitDays[0])
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 
 	untilTime := int64(0)
