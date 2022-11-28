@@ -6,22 +6,29 @@ import (
 
 // Session stores data about a bot session
 type Session struct {
-	StartedAt      int      `json:"startedat,omitempty" bson:"startedAt"`
-	UpTime         int      `json:"uptime,omitempty" bson:"upTime"`
-	Version        string   `json:"version,omitempty" bson:"version"`
-	Simulator      bool     `json:"simulator,omitempty" bson:"simulator"`
-	Trader         bool     `json:"trader,omitempty" bson:"trader"`
-	EvalConfig     []string `json:"evalconfig,omitempty" bson:"evalConfig"`
-	Pairs          []string `json:"pairs,omitempty" bson:"pairs"`
-	Exchanges      []string `json:"exchanges,omitempty" bson:"exchanges"`
-	Notifications  []string `json:"notifications,omitempty" bson:"notifications"`
-	Type           string   `json:"type,omitempty" bson:"type"`
-	Platform       string   `json:"platform,omitempty" bson:"platform"`
-	ReferenceMaket string   `json:"referencemarket,omitempty" bson:"referenceMarket"`
-	PortfolioValue float32  `json:"portfoliovalue,omitempty" bson:"portfolioValue"`
-	Profitability  float32  `json:"profitability,omitempty" bson:"profitability"`
-	TradedVolumes  map[string]float32  `json:"tradedvolumes,omitempty" bson:"tradedVolumes"`
-	Supports  map[string][]string  `json:"supports,omitempty" bson:"supports"`
+	StartedAt        int                 `json:"startedat,omitempty" bson:"startedAt"`
+	UpTime           int                 `json:"uptime,omitempty" bson:"upTime"`
+	Version          string              `json:"version,omitempty" bson:"version"`
+	Simulator        bool                `json:"simulator,omitempty" bson:"simulator"`
+	Trader           bool                `json:"trader,omitempty" bson:"trader"`
+	EvalConfig       []string            `json:"evalconfig,omitempty" bson:"evalConfig"`
+	Pairs            []string            `json:"pairs,omitempty" bson:"pairs"`
+	Exchanges        []string            `json:"exchanges,omitempty" bson:"exchanges"`
+	ExchangeTypes    []string            `json:"exchangetypes,omitempty" bson:"exchangeTypes"`
+	Notifications    []string            `json:"notifications,omitempty" bson:"notifications"`
+	Type             string              `json:"type,omitempty" bson:"type"`
+	Platform         string              `json:"platform,omitempty" bson:"platform"`
+	ReferenceMaket   string              `json:"referencemarket,omitempty" bson:"referenceMarket"`
+	PortfolioValue   float32             `json:"portfoliovalue,omitempty" bson:"portfolioValue"`
+	Profitability    float32             `json:"profitability,omitempty" bson:"profitability"`
+	TradedVolumes    map[string]float32  `json:"tradedvolumes,omitempty" bson:"tradedVolumes"`
+	Supports         map[string][]string `json:"supports,omitempty" bson:"supports"`
+	SignalEmitter    bool                `json:"signalemitter,omitempty" bson:"signalEmitter"`
+	SignalReceiver   bool                `json:"signalreceiver,omitempty" bson:"signalReceiver"`
+	CommunityBotType string              `json:"communitybottype,omitempty" bson:"communityBotType"`
+	ProfileId        string              `json:"profileid,omitempty" bson:"profileId"`
+	ProfileName      string              `json:"profilename,omitempty" bson:"profileName"`
+	ProfileImported  bool                `json:"profileimported,omitempty" bson:"profileImported"`
 }
 
 // Bot stores usage info about a specific bot identified by BotID
@@ -53,4 +60,10 @@ func (session *Session) FilterPublicInfo() {
 	session.TradedVolumes = nil
 	session.ReferenceMaket = ""
 	session.Supports = nil
+	session.SignalEmitter = false
+	session.SignalReceiver = false
+	session.CommunityBotType = ""
+	session.ProfileId = ""
+	session.ProfileName = ""
+	session.ProfileImported = false
 }
