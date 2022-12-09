@@ -1,4 +1,4 @@
-FROM golang:1.15 as builder
+FROM golang:1.19 as builder
 
 ADD . /${GOPATH}/src/github.com/Drakkar-Software/Metrics-Server
 WORKDIR /${GOPATH}/src/github.com/Drakkar-Software/Metrics-Server
