@@ -7,7 +7,6 @@ import (
 
 // Init registers the server routes
 func Init(e *echo.Echo) {
-	e.GET("/metrics/community", controller.PublicGetBots)
 	e.GET("/metrics/community/top/exchanges/:since", controller.TopExchanges)
 	e.GET("/metrics/community/top/pairs/:since", controller.TopPairs)
 	e.GET("/metrics/community/top/trading_modes/:since", controller.TopTradingModes)

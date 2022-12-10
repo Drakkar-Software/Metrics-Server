@@ -20,11 +20,6 @@ var ErrBotNotFound = errors.New("bot not found")
 // ErrInvalidData is returned new a bot is invalid (ex: CurrentSession.StartedAt == 0)
 var ErrInvalidData = errors.New("invalid data")
 
-// PublicGetBots returns filtered data about all bots
-func PublicGetBots(since int64, filterBots bool) (bot.Bots, error) {
-	return fetchBots(filterBots, false, since)
-}
-
 // CompleteGetBots returns all data about all bots
 func CompleteGetBots(history bool) (bot.Bots, error) {
 	return fetchBots(false, history, 0)

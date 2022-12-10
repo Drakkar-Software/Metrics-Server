@@ -16,17 +16,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// PublicGetBots returns a json representation of all the bots
-func PublicGetBots(c echo.Context) error {
-	bots, err := dao.PublicGetBots(0, true)
-	if err != nil {
-		log.Panic(err)
-		return c.JSON(http.StatusBadRequest, bots)
-	}
-
-	return c.JSON(http.StatusOK, bots)
-}
-
 func getTraderTypeParam(c echo.Context) string {
 	traderTypeParam := c.QueryParam("traderType")
 	if traderTypeParam == "simulated" {
