@@ -9,8 +9,9 @@ import (
 func Init(e *echo.Echo) {
 	e.GET("/metrics/community", controller.PublicGetBots)
 	e.GET("/metrics/community/top/exchanges/:since", controller.TopExchanges)
+	e.GET("/metrics/community/top/pairs/:since", controller.TopPairs)
 	e.GET("/metrics/community/top/trading_modes/:since", controller.TopTradingModes)
-	e.GET("/metrics/community/top/profitabilities/:since/:count", controller.TopProfitabilities)
+	e.GET("/metrics/community/top/evaluation_configs/:since", controller.TopEvaluationConfigs)
 	e.GET("/metrics/community/count/:years/:months/:days", controller.PublicGetCount)
 
 	e.GET("/metrics/full_data", controller.AuthenticatedGetBots)

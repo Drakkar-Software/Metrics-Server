@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"github.com/Drakkar-Software/Metrics-Server/api/caches"
 	"log"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Drakkar-Software/Metrics-Server/api/caches"
 
 	"github.com/Drakkar-Software/Metrics-Server/api/dao"
 	"github.com/Drakkar-Software/Metrics-Server/api/model"
@@ -27,35 +27,51 @@ func PublicGetBots(c echo.Context) error {
 	return c.JSON(http.StatusOK, bots)
 }
 
-// TopTradingModes return the top of bot current sessions exchanges
+func getTraderTypeParam(c echo.Context) string {
+	traderTypeParam := c.QueryParam("traderType")
+	if traderTypeParam == "simulated" {
+		return model.SimulatedTraders
+	}
+	if traderTypeParam == "real" {
+		return model.RealTraders
+	}
+	return model.AllTraders
+}
+
+// TopExchanges return the top of bot current sessions exchanges
 func TopExchanges(c echo.Context) error {
 	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	value, exists := caches.GetExchangeTop(sinceParam)
-	if exists{
+	traderType := getTraderTypeParam(c)
+
+	value, exists := caches.GetExchangeTop(traderType, sinceParam)
+	if exists {
 		return c.JSON(http.StatusOK, value)
 	}
-	bots, err := dao.PublicGetBots(sinceParam, false)
+	topExchanges := dao.FetchTop("exchanges", traderType, sinceParam, 1, 100, false)
+	caches.SetExchangeTop(traderType, sinceParam, topExchanges)
+
+	return c.JSON(http.StatusOK, topExchanges)
+}
+
+// TopPairs return the top of bot current sessions pairs
+func TopPairs(c echo.Context) error {
+	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
-		log.Panic(err)
-		return c.JSON(http.StatusBadRequest, bots)
+		return c.JSON(http.StatusBadRequest, nil)
 	}
-	top := make(map[string]int)
-	for _, bot := range bots {
-		for _, exchange := range bot.CurrentSession.Exchanges {
-			val, present := top[exchange]
-			if present {
-				top[exchange] = val + 1
-			}else{
-				top[exchange] = 1
-			}
-		}
+	traderType := getTraderTypeParam(c)
+
+	value, exists := caches.GetPairTop(traderType, sinceParam)
+	if exists {
+		return c.JSON(http.StatusOK, value)
 	}
-	sortedTop := getSortedTop(top)
-	caches.SetExchangeTop(sinceParam, sortedTop)
-	return c.JSON(http.StatusOK, sortedTop)
+	topPairs := dao.FetchTop("pairs", traderType, sinceParam, 1, 1000, false)
+	caches.SetPairTop(traderType, sinceParam, topPairs)
+
+	return c.JSON(http.StatusOK, topPairs)
 }
 
 // TopTradingModes return the top of bot current sessions trading modes
@@ -64,60 +80,34 @@ func TopTradingModes(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	value, exists := caches.GetTradingModeTop(sinceParam)
-	if exists{
+	traderType := getTraderTypeParam(c)
+
+	value, exists := caches.GetTradingModeTop(traderType, sinceParam)
+	if exists {
 		return c.JSON(http.StatusOK, value)
 	}
-	bots, err := dao.PublicGetBots(sinceParam, false)
-	if err != nil {
-		log.Panic(err)
-		return c.JSON(http.StatusBadRequest, bots)
-	}
-	top := make(map[string]int)
-	for _, bot := range bots {
-		for _, evalOrTradingMode := range bot.CurrentSession.EvalConfig {
-			if strings.HasSuffix(evalOrTradingMode, "TradingMode") {
-				val, present := top[evalOrTradingMode]
-				if present {
-					top[evalOrTradingMode] = val + 1
-				}else{
-					top[evalOrTradingMode] = 1
-				}
-			}
-		}
-	}
-	sortedTop := getSortedTop(top)
-	caches.SetTradingModeTop(sinceParam, sortedTop)
-	return c.JSON(http.StatusOK, sortedTop)
+	topTradingModes := dao.FetchTop("evalConfig", traderType, sinceParam, 3, 100, true)
+	caches.SetTradingModeTop(traderType, sinceParam, topTradingModes)
+
+	return c.JSON(http.StatusOK, topTradingModes)
 }
 
-// TopProfitabilities return the top of bot current sessions profitability with a limit of maxValues
-func TopProfitabilities(c echo.Context) error {
-	maxValues := 3
+// TopEvaluationConfigs return the top of bot current sessions trading modes and evaluators
+func TopEvaluationConfigs(c echo.Context) error {
 	sinceParam, err := strconv.ParseInt(c.Param("since"), 10, 0)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-	countParam, err := strconv.ParseInt(c.Param("count"), 10, 0)
-	if err != nil || int(countParam) > maxValues {
-		return c.JSON(http.StatusBadRequest, nil)
-	}
-	bots, err := dao.PublicGetBots(sinceParam, false)
-	profitabilities := make([]float32, len(bots))
-	i := 0
-	for _, bot := range bots {
-		profitabilities[i] = bot.CurrentSession.Profitability
-		i++
-	}
-	sort.SliceStable(profitabilities, func(i, j int) bool {
-		return profitabilities[i] > profitabilities[j]
-	})
+	traderType := getTraderTypeParam(c)
 
-	returnedProfitabilities := profitabilities
-	if len(profitabilities) >= int(countParam){
-		returnedProfitabilities = profitabilities[:countParam]
+	value, exists := caches.GetEvaluationConfigTop(traderType, sinceParam)
+	if exists {
+		return c.JSON(http.StatusOK, value)
 	}
-	return c.JSON(http.StatusOK, returnedProfitabilities)
+	topEvalConfig := dao.FetchTop("evalConfig", traderType, sinceParam, 3, 100, false)
+
+	caches.SetEvaluationConfigTop(traderType, sinceParam, topEvalConfig)
+	return c.JSON(http.StatusOK, topEvalConfig)
 }
 
 // AuthenticatedGetBots returns a json representation of all the bots without filters
@@ -128,19 +118,6 @@ func AuthenticatedGetBots(c echo.Context) error {
 // AuthenticatedGetBotsHistory returns a json representation of all the bots with historical data without filters
 func AuthenticatedGetBotsHistory(c echo.Context) error {
 	return getAuthBots(c, true, model.HistoricalDataAccess)
-}
-
-func getSortedTop(top map[string]int) []model.Top {
-	topList := make([]model.Top, len(top))
-	i := 0
-	for key, value := range top {
-		topList[i] = model.Top{Name: key, Count: value}
-		i++
-	}
-	sort.SliceStable(topList, func(i, j int) bool {
-		return topList[i].Count > topList[j].Count
-	})
-	return topList
 }
 
 func getAuthBots(c echo.Context, history bool, minAccessRight int8) error {
@@ -191,7 +168,7 @@ func PublicGetCount(c echo.Context) error {
 	// returns full total if params are all zeros
 	if !(years == 0 && months == 0 && days == 0) {
 		lastMonthTimeStamp := time.Now().AddDate(years, months, days)
-		untilTime  = lastMonthTimeStamp.Unix()
+		untilTime = lastMonthTimeStamp.Unix()
 	}
 	totalBots, exists := caches.GetBotCount(untilTime)
 	if !exists {
