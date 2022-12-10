@@ -4,7 +4,6 @@ package caches
 var identifierModulo = int64(3600 * 4)
 var maxCacheSize = 10000
 
-
-func roundIdentifier(identifier int64) int64{
+func roundIdentifier(identifier int64) int64 {
 	return identifier - (identifier % identifierModulo)
 }
