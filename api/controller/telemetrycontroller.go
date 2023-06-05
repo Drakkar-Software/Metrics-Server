@@ -154,18 +154,19 @@ func PublicGetCount(c echo.Context) error {
 	}
 
 	untilTime := int64(0)
+	nowTime := time.Now()
 	// returns full total if params are all zeros
 	if !(years == 0 && months == 0 && days == 0) {
-		lastMonthTimeStamp := time.Now().AddDate(years, months, days)
+		lastMonthTimeStamp := nowTime.AddDate(years, months, days)
 		untilTime = lastMonthTimeStamp.Unix()
 	}
-	totalBots, exists := caches.GetBotCount(untilTime)
+	totalBots, exists := caches.GetUpToDateBotCount(untilTime, nowTime.Unix())
 	if !exists {
 		totalBots, err = dao.PublicGetCountBots(untilTime)
 		if err != nil {
 			log.Panic(err)
 		}
-		caches.SetBotCount(untilTime, totalBots)
+		caches.SetBotCount(untilTime, totalBots, nowTime.Unix())
 	}
 	jsonMap["total"] = totalBots
 	return c.JSON(http.StatusOK, jsonMap)
